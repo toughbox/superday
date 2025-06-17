@@ -54,6 +54,18 @@ dependencies:
   
   # 유틸리티
   intl: ^0.19.0
+  
+  # 알림
+  flutter_local_notifications: ^17.2.3
+  
+  # 파일 시스템
+  file_picker: ^8.1.2
+  
+  # 패키지 정보
+  package_info_plus: ^8.0.2
+  
+  # URL 런처
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:

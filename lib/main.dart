@@ -9,6 +9,7 @@ import 'services/web_goal_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/history_screen.dart';
+import 'screens/settings_screen.dart';
 
 void main() {
   runApp(const SuperDayApp());
@@ -48,7 +49,7 @@ class _MainScreenState extends State<MainScreen> {
     const HomeScreen(),
     const CalendarScreen(),
     const HistoryScreen(),
-    const SettingsTabPlaceholder(),
+    const SettingsScreen(),
   ];
 
   @override

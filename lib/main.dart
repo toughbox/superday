@@ -6,12 +6,26 @@ import 'constants/themes.dart';
 import 'constants/strings.dart';
 import 'services/goal_provider.dart';
 import 'services/web_goal_provider.dart';
+import 'services/notification_service.dart';
 import 'screens/home_screen.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/settings_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 알림 서비스 초기화
+  final notificationService = NotificationService();
+
+  // 권한 요청 후 알림 시작
+  if (await notificationService.requestPermission()) {
+    await notificationService.startNotificationScheduler();
+    print('알림 기능이 활성화되었습니다!');
+  } else {
+    print('알림 권한이 거부되었습니다.');
+  }
+
   runApp(const SuperDayApp());
 }
 
@@ -96,18 +110,12 @@ class HomeTabPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(AppStrings.todayGoal),
-      ),
+      appBar: AppBar(title: const Text(AppStrings.todayGoal)),
       body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.star,
-              size: 64,
-              color: AppColors.primaryMint,
-            ),
+            Icon(Icons.star, size: 64, color: AppColors.primaryMint),
             SizedBox(height: 16),
             Text(
               '홈 화면',
@@ -120,10 +128,7 @@ class HomeTabPlaceholder extends StatelessWidget {
             SizedBox(height: 8),
             Text(
               '오늘의 목표를 설정하고 달성해보세요!',
-              style: TextStyle(
-                fontSize: 16,
-                color: AppColors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -138,9 +143,7 @@ class CalendarTabPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(AppStrings.calendarTab),
-      ),
+      appBar: AppBar(title: const Text(AppStrings.calendarTab)),
       body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -162,10 +165,7 @@ class CalendarTabPlaceholder extends StatelessWidget {
             SizedBox(height: 8),
             Text(
               '목표 달성 현황을 달력으로 확인하세요!',
-              style: TextStyle(
-                fontSize: 16,
-                color: AppColors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -180,18 +180,12 @@ class HistoryTabPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(AppStrings.historyTab),
-      ),
+      appBar: AppBar(title: const Text(AppStrings.historyTab)),
       body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.history,
-              size: 64,
-              color: AppColors.primaryYellow,
-            ),
+            Icon(Icons.history, size: 64, color: AppColors.primaryYellow),
             SizedBox(height: 16),
             Text(
               '히스토리 화면',
@@ -204,10 +198,7 @@ class HistoryTabPlaceholder extends StatelessWidget {
             SizedBox(height: 8),
             Text(
               '지난 목표들과 달성률을 확인하세요!',
-              style: TextStyle(
-                fontSize: 16,
-                color: AppColors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -222,18 +213,12 @@ class SettingsTabPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(AppStrings.settingsTab),
-      ),
+      appBar: AppBar(title: const Text(AppStrings.settingsTab)),
       body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.settings,
-              size: 64,
-              color: AppColors.primaryPink,
-            ),
+            Icon(Icons.settings, size: 64, color: AppColors.primaryPink),
             SizedBox(height: 16),
             Text(
               '설정 화면',
@@ -246,10 +231,7 @@ class SettingsTabPlaceholder extends StatelessWidget {
             SizedBox(height: 8),
             Text(
               '앱 설정을 변경하세요!',
-              style: TextStyle(
-                fontSize: 16,
-                color: AppColors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
             ),
           ],
         ),

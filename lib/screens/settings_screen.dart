@@ -19,7 +19,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final NotificationService _notificationService = NotificationService();
   final BackupService _backupService = BackupService();
-  
+
   // 설정 상태들
   bool _isDarkMode = false;
   bool _notificationsEnabled = false;
@@ -27,11 +27,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _encouragementMessage = true;
   bool _eveningReview = true;
   TimeOfDay _reminderTime = const TimeOfDay(hour: 9, minute: 0);
-  
+
   // 앱 정보
   String _appVersion = '';
   String _appBuildNumber = '';
-  
+
   @override
   void initState() {
     super.initState();
@@ -50,7 +50,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final hour = settings['reminderHour'] ?? 9;
       final minute = settings['reminderMinute'] ?? 0;
       _reminderTime = TimeOfDay(hour: hour, minute: minute);
-      
+
       // 다크모드는 시스템 테마를 따라감 (추후 SharedPreferences로 저장 가능)
       _isDarkMode = Theme.of(context).brightness == Brightness.dark;
     });
@@ -72,10 +72,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: AppBar(
         title: const Text(
           '설정',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: AppColors.primaryPink,
         elevation: 0,
@@ -84,128 +81,123 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.all(16),
         children: [
           // 테마 설정
-          _buildSectionCard(
-            '테마 설정',
-            [
-              _buildSwitchTile(
-                icon: Icons.dark_mode,
-                title: '다크 모드',
-                subtitle: '어두운 테마 사용',
-                value: _isDarkMode,
-                onChanged: _toggleDarkMode,
-              ),
-            ],
-          ),
-          
+          _buildSectionCard('테마 설정', [
+            _buildSwitchTile(
+              icon: Icons.dark_mode,
+              title: '다크 모드',
+              subtitle: '어두운 테마 사용',
+              value: _isDarkMode,
+              onChanged: _toggleDarkMode,
+            ),
+          ]),
+
           const SizedBox(height: 16),
-          
+
           // 알림 설정
-          _buildSectionCard(
-            '알림 설정',
-            [
+          _buildSectionCard('알림 설정', [
+            _buildSwitchTile(
+              icon: Icons.notifications,
+              title: '알림 허용',
+              subtitle: '목표 리마인더 및 격려 메시지',
+              value: _notificationsEnabled,
+              onChanged: _toggleNotifications,
+            ),
+
+            if (_notificationsEnabled) ...[
+              const Divider(height: 1),
+              _buildTimeTile(
+                icon: Icons.access_time,
+                title: '리마인더 시간',
+                subtitle: '매일 목표 설정 알림 시간',
+                time: _reminderTime,
+                onChanged: _changeReminderTime,
+              ),
+              const Divider(height: 1),
               _buildSwitchTile(
-                icon: Icons.notifications,
-                title: '알림 허용',
-                subtitle: '목표 리마인더 및 격려 메시지',
-                value: _notificationsEnabled,
-                onChanged: _toggleNotifications,
+                icon: Icons.alarm,
+                title: '매일 리마인더',
+                subtitle: '목표 설정 알림',
+                value: _dailyReminder,
+                onChanged:
+                    (value) =>
+                        _updateNotificationSetting('dailyReminder', value),
               ),
-              if (_notificationsEnabled) ...[
-                const Divider(height: 1),
-                _buildTimeTile(
-                  icon: Icons.access_time,
-                  title: '리마인더 시간',
-                  subtitle: '매일 목표 설정 알림 시간',
-                  time: _reminderTime,
-                  onChanged: _changeReminderTime,
-                ),
-                const Divider(height: 1),
-                _buildSwitchTile(
-                  icon: Icons.alarm,
-                  title: '매일 리마인더',
-                  subtitle: '목표 설정 알림',
-                  value: _dailyReminder,
-                  onChanged: (value) => _updateNotificationSetting('dailyReminder', value),
-                ),
-                const Divider(height: 1),
-                _buildSwitchTile(
-                  icon: Icons.favorite,
-                  title: '격려 메시지',
-                  subtitle: '목표 달성 응원 알림',
-                  value: _encouragementMessage,
-                  onChanged: (value) => _updateNotificationSetting('encouragement', value),
-                ),
-                const Divider(height: 1),
-                _buildSwitchTile(
-                  icon: Icons.nightlight_round,
-                  title: '저녁 리뷰',
-                  subtitle: '하루 목표 확인 알림',
-                  value: _eveningReview,
-                  onChanged: (value) => _updateNotificationSetting('eveningReview', value),
-                ),
-              ],
+              const Divider(height: 1),
+              _buildSwitchTile(
+                icon: Icons.favorite,
+                title: '격려 메시지',
+                subtitle: '목표 달성 응원 알림',
+                value: _encouragementMessage,
+                onChanged:
+                    (value) =>
+                        _updateNotificationSetting('encouragement', value),
+              ),
+              const Divider(height: 1),
+              _buildSwitchTile(
+                icon: Icons.nightlight_round,
+                title: '저녁 리뷰',
+                subtitle: '하루 목표 확인 알림',
+                value: _eveningReview,
+                onChanged:
+                    (value) =>
+                        _updateNotificationSetting('eveningReview', value),
+              ),
             ],
-          ),
-          
+          ]),
+
           const SizedBox(height: 16),
-          
+
           // 데이터 관리
-          _buildSectionCard(
-            '데이터 관리',
-            [
-              _buildActionTile(
-                icon: Icons.backup,
-                title: '데이터 백업',
-                subtitle: '목표 데이터를 파일로 내보내기',
-                onTap: _exportData,
-              ),
-              const Divider(height: 1),
-              _buildActionTile(
-                icon: Icons.restore,
-                title: '데이터 복원',
-                subtitle: '백업 파일에서 데이터 가져오기',
-                onTap: _importData,
-              ),
-            ],
-          ),
-          
+          _buildSectionCard('데이터 관리', [
+            _buildActionTile(
+              icon: Icons.backup,
+              title: '데이터 백업',
+              subtitle: '목표 데이터를 파일로 내보내기',
+              onTap: _exportData,
+            ),
+            const Divider(height: 1),
+            _buildActionTile(
+              icon: Icons.restore,
+              title: '데이터 복원',
+              subtitle: '백업 파일에서 데이터 가져오기',
+              onTap: _importData,
+            ),
+          ]),
+
           const SizedBox(height: 16),
-          
+
           // 앱 정보
-          _buildSectionCard(
-            '앱 정보',
-            [
-              _buildInfoTile(
-                icon: Icons.info,
-                title: '버전',
-                subtitle: '$_appVersion ($_appBuildNumber)',
-              ),
-              const Divider(height: 1),
-              _buildActionTile(
-                icon: Icons.description,
-                title: '개인정보처리방침',
-                subtitle: '개인정보 보호 정책',
-                onTap: _openPrivacyPolicy,
-              ),
-              const Divider(height: 1),
-              _buildActionTile(
-                icon: Icons.email,
-                title: '문의하기',
-                subtitle: '개발자에게 문의',
-                onTap: _contactDeveloper,
-              ),
-              const Divider(height: 1),
-              _buildActionTile(
-                icon: Icons.star,
-                title: '앱 평가하기',
-                subtitle: '스토어에서 평가하기',
-                onTap: _rateApp,
-              ),
-            ],
-          ),
-          
+          _buildSectionCard('앱 정보', [
+            _buildInfoTile(
+              icon: Icons.info,
+              title: '버전',
+              subtitle: '$_appVersion ($_appBuildNumber)',
+            ),
+            const Divider(height: 1),
+            _buildActionTile(
+              icon: Icons.description,
+              title: '개인정보처리방침',
+              subtitle: '개인정보 보호 정책',
+              onTap: _openPrivacyPolicy,
+            ),
+            const Divider(height: 1),
+            _buildActionTile(
+              icon: Icons.email,
+              title: '문의하기',
+              subtitle: '개발자에게 문의',
+              onTap: _contactDeveloper,
+            ),
+            const Divider(height: 1),
+            _buildActionTile(
+              icon: Icons.star,
+              title: '앱 평가하기',
+              subtitle: '스토어에서 평가하기',
+              onTap: _rateApp,
+            ),
+          ]),
+
           const SizedBox(height: 32),
-          
+
           // 하단 로고
           Center(
             child: Column(
@@ -245,9 +237,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildSectionCard(String title, List<Widget> children) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -364,24 +354,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (value) {
       final hasPermission = await _notificationService.requestPermission();
       if (!hasPermission) {
-        _showSnackBar('알림 권한이 필요합니다. 설정에서 허용해주세요.');
+        _showSnackBar('🔔 알림 권한이 필요합니다. 브라우저 설정에서 허용해주세요.');
         return;
       }
+
+      // 권한이 허용되면 즉시 스케줄러 시작
+      await _notificationService.startNotificationScheduler();
+      _showSnackBar('🔔 알림이 활성화되었습니다! 실시간으로 알림을 받을 수 있어요.');
+    } else {
+      await _notificationService.stopNotificationScheduler();
+      _showSnackBar('🔕 알림이 비활성화되었습니다.');
     }
-    
+
     setState(() {
       _notificationsEnabled = value;
     });
-    
+
     await _notificationService.setEnabled(value);
-    
-    if (value) {
-      await _scheduleNotifications();
-      _showSnackBar('알림이 활성화되었습니다');
-    } else {
-      await _notificationService.cancelAll();
-      _showSnackBar('알림이 비활성화되었습니다');
-    }
   }
 
   /// 리마인더 시간 변경
@@ -389,9 +378,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       _reminderTime = newTime;
     });
-    
+
     await _notificationService.setReminderTime(newTime.hour, newTime.minute);
-    
+
     if (_notificationsEnabled) {
       await _scheduleNotifications();
       _showSnackBar('리마인더 시간이 변경되었습니다');
@@ -413,29 +402,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
           break;
       }
     });
-    
+
     await _notificationService.updateSetting(key, value);
-    
+
     if (_notificationsEnabled) {
       await _scheduleNotifications();
     }
   }
 
-  /// 알림 스케줄링
+  /// 알림 스케줄링 (설정만 저장, 스케줄러는 건드리지 않음)
   Future<void> _scheduleNotifications() async {
-    await _notificationService.cancelAll();
-    
-    if (_dailyReminder) {
-      await _notificationService.scheduleDailyReminder(_reminderTime);
-    }
-    
-    if (_encouragementMessage) {
-      await _notificationService.scheduleEncouragementMessage();
-    }
-    
-    if (_eveningReview) {
-      await _notificationService.scheduleEveningReview();
-    }
+    // 개별 스케줄링은 NotificationService에서 자동으로 처리
+    print('알림 설정이 업데이트되었습니다.');
   }
 
   /// 데이터 내보내기
@@ -443,7 +421,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       final goalProvider = context.read<GoalProviderInterface>();
       final success = await _backupService.exportData(goalProvider);
-      
+
       if (success) {
         _showSnackBar('데이터가 성공적으로 내보내졌습니다');
       } else {
@@ -461,14 +439,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         type: FileType.custom,
         allowedExtensions: ['json'],
       );
-      
+
       if (result != null && result.files.single.path != null) {
         final goalProvider = context.read<GoalProviderInterface>();
         final success = await _backupService.importData(
           result.files.single.path!,
           goalProvider,
         );
-        
+
         if (success) {
           _showSnackBar('데이터가 성공적으로 복원되었습니다');
           await goalProvider.refresh();
@@ -503,7 +481,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   /// 앱 평가하기
   Future<void> _rateApp() async {
-    const url = 'https://play.google.com/store/apps/details?id=com.example.superday';
+    const url =
+        'https://play.google.com/store/apps/details?id=com.example.superday';
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(Uri.parse(url));
     } else {
@@ -521,4 +500,4 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-} 
+}

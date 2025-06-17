@@ -18,7 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // 화면 로드 시 데이터 초기화
+    // 화면 로드 시 데이터 초기화!
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<GoalProviderInterface>().initialize();
     });

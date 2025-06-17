@@ -25,6 +25,11 @@ class _HistoryScreenState extends State<HistoryScreen>
   
   List<Achievement> _achievements = [];
   List<Goal> _recentGoals = [];
+  
+  // 필터링 상태
+  String _searchText = '';
+  String _selectedFilter = '전체'; // 전체, 7일, 30일
+  bool _showCompletedOnly = false;
 
   @override
   void initState() {
@@ -143,45 +148,59 @@ class _HistoryScreenState extends State<HistoryScreen>
 
   /// 기록 탭 구성
   Widget _buildHistoryTab() {
-    return RefreshIndicator(
-      onRefresh: _loadData,
-      child: _achievements.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.emoji_events,
-                    size: 64,
-                    color: AppColors.textSecondary,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    '아직 달성한 목표가 없습니다',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: AppColors.textSecondary,
+    return Column(
+      children: [
+        // 필터링 컨트롤
+        _buildFilterControls(),
+        
+        // 기록 리스트
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: _loadData,
+            child: _getFilteredAchievements().isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.emoji_events,
+                          size: 64,
+                          color: AppColors.textSecondary,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          _achievements.isEmpty 
+                              ? '아직 달성한 목표가 없습니다'
+                              : '조건에 맞는 기록이 없습니다',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _achievements.isEmpty 
+                              ? '첫 번째 목표를 달성해보세요!'
+                              : '다른 조건으로 검색해보세요',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
                     ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _getFilteredAchievements().length,
+                    itemBuilder: (context, index) {
+                      final achievement = _getFilteredAchievements()[index];
+                      return _buildAchievementItem(achievement);
+                    },
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '첫 번째 목표를 달성해보세요!',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _achievements.length,
-              itemBuilder: (context, index) {
-                final achievement = _achievements[index];
-                return _buildAchievementItem(achievement);
-              },
-            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -406,6 +425,115 @@ class _HistoryScreenState extends State<HistoryScreen>
         ],
       ),
     );
+  }
+
+  /// 필터링 컨트롤
+  Widget _buildFilterControls() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // 검색창
+          TextField(
+            onChanged: (value) {
+              setState(() {
+                _searchText = value;
+              });
+            },
+            decoration: InputDecoration(
+              hintText: '목표 제목으로 검색...',
+              prefixIcon: const Icon(Icons.search),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // 필터 버튼들
+          Row(
+            children: [
+              // 기간 필터
+              Expanded(
+                child: DropdownButtonFormField<String>(
+                  value: _selectedFilter,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedFilter = value!;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                  items: ['전체', '7일', '30일'].map((filter) {
+                    return DropdownMenuItem(
+                      value: filter,
+                      child: Text(filter),
+                    );
+                  }).toList(),
+                ),
+              ),
+              
+              const SizedBox(width: 12),
+              
+              // 달성 상태 필터
+              FilterChip(
+                label: const Text('달성한 목표만'),
+                selected: _showCompletedOnly,
+                onSelected: (selected) {
+                  setState(() {
+                    _showCompletedOnly = selected;
+                  });
+                },
+                selectedColor: AppColors.primaryMint.withOpacity(0.3),
+                checkmarkColor: AppColors.primaryMint,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 필터링된 달성 기록 가져오기
+  List<Achievement> _getFilteredAchievements() {
+    List<Achievement> filtered = List.from(_achievements);
+    
+    // 검색 텍스트로 필터링
+    if (_searchText.isNotEmpty) {
+      filtered = filtered.where((achievement) =>
+          achievement.celebrationMessage.toLowerCase().contains(_searchText.toLowerCase())).toList();
+    }
+    
+    // 기간으로 필터링
+    if (_selectedFilter != '전체') {
+      final now = DateTime.now();
+      final filterDays = _selectedFilter == '7일' ? 7 : 30;
+      final filterDate = now.subtract(Duration(days: filterDays));
+      
+      filtered = filtered.where((achievement) =>
+          achievement.achievedDate.isAfter(filterDate)).toList();
+    }
+    
+    // 달성 상태로 필터링 (Achievement는 이미 달성된 것들이므로 여기서는 의미없지만 구조상 유지)
+    
+    return filtered;
   }
 
   /// 달성 기록 아이템

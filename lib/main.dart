@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'constants/colors.dart';
 import 'constants/themes.dart';
 import 'constants/strings.dart';
 import 'services/goal_provider.dart';
-import 'services/web_goal_provider.dart';
-import 'services/notification_service.dart';
+import 'services/goal_provider_interface.dart';
 import 'screens/home_screen.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/history_screen.dart';
@@ -14,18 +12,6 @@ import 'screens/settings_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // 알림 서비스 초기화
-  final notificationService = NotificationService();
-
-  // 권한 요청 후 알림 시작
-  if (await notificationService.requestPermission()) {
-    await notificationService.startNotificationScheduler();
-    print('알림 기능이 활성화되었습니다!');
-  } else {
-    print('알림 권한이 거부되었습니다.');
-  }
-
   runApp(const SuperDayApp());
 }
 
@@ -34,8 +20,8 @@ class SuperDayApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => kIsWeb ? WebGoalProvider() : GoalProvider(),
+    return ChangeNotifierProvider<GoalProviderInterface>(
+      create: (context) => GoalProvider(),
       child: MaterialApp(
         title: AppStrings.appName,
         theme: AppThemes.lightTheme,

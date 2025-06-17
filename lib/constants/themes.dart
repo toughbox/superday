@@ -35,11 +35,11 @@ class AppThemes {
       ),
       
       // 카드 테마
-      cardTheme: CardTheme(
+      cardTheme: const CardThemeData(
         color: AppColors.cardBackground,
         elevation: 2,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.all(Radius.circular(12)),
         ),
       ),
       
@@ -118,11 +118,11 @@ class AppThemes {
         centerTitle: true,
       ),
       
-      cardTheme: CardTheme(
-        color: const Color(0xFF1E1E1E),
+      cardTheme: const CardThemeData(
+        color: Color(0xFF1E1E1E),
         elevation: 2,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.all(Radius.circular(12)),
         ),
       ),
     );

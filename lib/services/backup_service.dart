@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:file_picker/file_picker.dart';
 import '../models/goal.dart';
 import '../models/achievement.dart';
@@ -24,13 +23,8 @@ class BackupService {
       
       final jsonString = const JsonEncoder.withIndent('  ').convert(backupData);
       
-      if (kIsWeb) {
-        // 웹 환경에서는 다운로드 링크 생성
-        return await _downloadFileWeb(jsonString);
-      } else {
-        // 모바일에서는 파일 저장
-        return await _saveFileMobile(jsonString);
-      }
+      // 모바일에서 파일 저장
+      return await _saveFileMobile(jsonString);
     } catch (e) {
       print('데이터 내보내기 오류: $e');
       return false;
@@ -69,31 +63,7 @@ class BackupService {
     }
   }
   
-  /// 웹 환경에서 파일 다운로드
-  Future<bool> _downloadFileWeb(String content) async {
-    try {
-      // HTML 요소를 통한 다운로드 (웹 전용)
-      final fileName = 'superday_backup_${DateTime.now().millisecondsSinceEpoch}.json';
-      
-      // 웹에서는 FilePicker의 saveFile 사용
-      final filePath = await FilePicker.platform.saveFile(
-        dialogTitle: '백업 파일 저장',
-        fileName: fileName,
-        type: FileType.custom,
-        allowedExtensions: ['json'],
-      );
-      
-      if (filePath != null) {
-        // 실제 웹에서는 더 복잡한 구현 필요
-        return true;
-      }
-      
-      return false;
-    } catch (e) {
-      print('웹 파일 다운로드 오류: $e');
-      return false;
-    }
-  }
+
   
   /// 모바일에서 파일 저장
   Future<bool> _saveFileMobile(String content) async {

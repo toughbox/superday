@@ -6,7 +6,6 @@ import 'package:file_picker/file_picker.dart';
 import '../constants/colors.dart';
 import '../constants/strings.dart';
 import '../services/goal_provider_interface.dart';
-import '../services/notification_service.dart';
 import '../services/backup_service.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -17,16 +16,10 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  final NotificationService _notificationService = NotificationService();
   final BackupService _backupService = BackupService();
 
   // 설정 상태들
   bool _isDarkMode = false;
-  bool _notificationsEnabled = false;
-  bool _dailyReminder = true;
-  bool _encouragementMessage = true;
-  bool _eveningReview = true;
-  TimeOfDay _reminderTime = const TimeOfDay(hour: 9, minute: 0);
 
   // 앱 정보
   String _appVersion = '';
@@ -41,16 +34,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   /// 설정 로드
   Future<void> _loadSettings() async {
-    final settings = await _notificationService.getSettings();
     setState(() {
-      _notificationsEnabled = settings['enabled'] ?? false;
-      _dailyReminder = settings['dailyReminder'] ?? true;
-      _encouragementMessage = settings['encouragement'] ?? true;
-      _eveningReview = settings['eveningReview'] ?? true;
-      final hour = settings['reminderHour'] ?? 9;
-      final minute = settings['reminderMinute'] ?? 0;
-      _reminderTime = TimeOfDay(hour: hour, minute: minute);
-
       // 다크모드는 시스템 테마를 따라감 (추후 SharedPreferences로 저장 가능)
       _isDarkMode = Theme.of(context).brightness == Brightness.dark;
     });
@@ -89,60 +73,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               value: _isDarkMode,
               onChanged: _toggleDarkMode,
             ),
-          ]),
-
-          const SizedBox(height: 16),
-
-          // 알림 설정
-          _buildSectionCard('알림 설정', [
-            _buildSwitchTile(
-              icon: Icons.notifications,
-              title: '알림 허용',
-              subtitle: '목표 리마인더 및 격려 메시지',
-              value: _notificationsEnabled,
-              onChanged: _toggleNotifications,
-            ),
-
-            if (_notificationsEnabled) ...[
-              const Divider(height: 1),
-              _buildTimeTile(
-                icon: Icons.access_time,
-                title: '리마인더 시간',
-                subtitle: '매일 목표 설정 알림 시간',
-                time: _reminderTime,
-                onChanged: _changeReminderTime,
-              ),
-              const Divider(height: 1),
-              _buildSwitchTile(
-                icon: Icons.alarm,
-                title: '매일 리마인더',
-                subtitle: '목표 설정 알림',
-                value: _dailyReminder,
-                onChanged:
-                    (value) =>
-                        _updateNotificationSetting('dailyReminder', value),
-              ),
-              const Divider(height: 1),
-              _buildSwitchTile(
-                icon: Icons.favorite,
-                title: '격려 메시지',
-                subtitle: '목표 달성 응원 알림',
-                value: _encouragementMessage,
-                onChanged:
-                    (value) =>
-                        _updateNotificationSetting('encouragement', value),
-              ),
-              const Divider(height: 1),
-              _buildSwitchTile(
-                icon: Icons.nightlight_round,
-                title: '저녁 리뷰',
-                subtitle: '하루 목표 확인 알림',
-                value: _eveningReview,
-                onChanged:
-                    (value) =>
-                        _updateNotificationSetting('eveningReview', value),
-              ),
-            ],
           ]),
 
           const SizedBox(height: 16),
@@ -279,37 +209,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  /// 시간 설정 타일 위젯
-  Widget _buildTimeTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required TimeOfDay time,
-    required ValueChanged<TimeOfDay> onChanged,
-  }) {
-    return ListTile(
-      leading: Icon(icon, color: AppColors.primary),
-      title: Text(title),
-      subtitle: Text(subtitle),
-      trailing: Text(
-        time.format(context),
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: AppColors.primary,
-        ),
-      ),
-      onTap: () async {
-        final newTime = await showTimePicker(
-          context: context,
-          initialTime: time,
-        );
-        if (newTime != null) {
-          onChanged(newTime);
-        }
-      },
-    );
-  }
+
 
   /// 액션 타일 위젯
   Widget _buildActionTile({
@@ -349,72 +249,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _showSnackBar('다크모드는 추후 업데이트에서 지원됩니다');
   }
 
-  /// 알림 토글
-  Future<void> _toggleNotifications(bool value) async {
-    if (value) {
-      final hasPermission = await _notificationService.requestPermission();
-      if (!hasPermission) {
-        _showSnackBar('🔔 알림 권한이 필요합니다. 브라우저 설정에서 허용해주세요.');
-        return;
-      }
 
-      // 권한이 허용되면 즉시 스케줄러 시작
-      await _notificationService.startNotificationScheduler();
-      _showSnackBar('🔔 알림이 활성화되었습니다! 실시간으로 알림을 받을 수 있어요.');
-    } else {
-      await _notificationService.stopNotificationScheduler();
-      _showSnackBar('🔕 알림이 비활성화되었습니다.');
-    }
-
-    setState(() {
-      _notificationsEnabled = value;
-    });
-
-    await _notificationService.setEnabled(value);
-  }
-
-  /// 리마인더 시간 변경
-  Future<void> _changeReminderTime(TimeOfDay newTime) async {
-    setState(() {
-      _reminderTime = newTime;
-    });
-
-    await _notificationService.setReminderTime(newTime.hour, newTime.minute);
-
-    if (_notificationsEnabled) {
-      await _scheduleNotifications();
-      _showSnackBar('리마인더 시간이 변경되었습니다');
-    }
-  }
-
-  /// 알림 설정 업데이트
-  Future<void> _updateNotificationSetting(String key, bool value) async {
-    setState(() {
-      switch (key) {
-        case 'dailyReminder':
-          _dailyReminder = value;
-          break;
-        case 'encouragement':
-          _encouragementMessage = value;
-          break;
-        case 'eveningReview':
-          _eveningReview = value;
-          break;
-      }
-    });
-
-    await _notificationService.updateSetting(key, value);
-
-    if (_notificationsEnabled) {
-      await _scheduleNotifications();
-    }
-  }
-
-  /// 알림 스케줄링 (설정만 저장, 스케줄러는 건드리지 않음)
-  Future<void> _scheduleNotifications() async {
-    // 개별 스케줄링은 NotificationService에서 자동으로 처리
-    print('알림 설정이 업데이트되었습니다.');
-  }
 
   /// 데이터 내보내기
   Future<void> _exportData() async {

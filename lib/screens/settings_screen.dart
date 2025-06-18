@@ -18,8 +18,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final BackupService _backupService = BackupService();
 
-  // 설정 상태들
-  bool _isDarkMode = false;
+  // 설정 상태들 (다크모드 제거됨)
 
   // 앱 정보
   String _appVersion = '';
@@ -34,15 +33,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _loadSettings();
-  }
-
-  /// 설정 로드
-  Future<void> _loadSettings() async {
-    setState(() {
-      // 다크모드는 시스템 테마를 따라감 (추후 SharedPreferences로 저장 가능)
-      _isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    });
+    // 다크모드 설정 로드 제거됨
   }
 
   /// 앱 정보 로드
@@ -69,19 +60,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // 테마 설정
-          _buildSectionCard('테마 설정', [
-            _buildSwitchTile(
-              icon: Icons.dark_mode,
-              title: '다크 모드',
-              subtitle: '어두운 테마 사용',
-              value: _isDarkMode,
-              onChanged: _toggleDarkMode,
-            ),
-          ]),
-
-          const SizedBox(height: 16),
-
           // 데이터 관리
           _buildSectionCard('데이터 관리', [
             _buildActionTile(
@@ -194,25 +172,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  /// 스위치 타일 위젯
-  Widget _buildSwitchTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return ListTile(
-      leading: Icon(icon, color: AppColors.primary),
-      title: Text(title),
-      subtitle: Text(subtitle),
-      trailing: Switch(
-        value: value,
-        onChanged: onChanged,
-        activeColor: AppColors.primary,
-      ),
-    );
-  }
+  // 스위치 타일 위젯 제거됨 (다크모드 제거로 인해 불필요)
 
   /// 액션 타일 위젯
   Widget _buildActionTile({
@@ -243,14 +203,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  /// 다크모드 토글
-  void _toggleDarkMode(bool value) {
-    setState(() {
-      _isDarkMode = value;
-    });
-    // TODO: 테마 변경 로직 구현
-    _showSnackBar('다크모드는 추후 업데이트에서 지원됩니다');
-  }
+  // 다크모드 토글 메서드 제거됨
 
   /// 데이터 내보내기
   Future<void> _exportData() async {

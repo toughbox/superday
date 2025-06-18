@@ -16,16 +16,16 @@ class HistoryScreen extends StatefulWidget {
 class _HistoryScreenState extends State<HistoryScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  
+
   // 통계 데이터
   int _streakDays = 0;
   double _weeklyRate = 0.0;
   double _monthlyRate = 0.0;
   double _overallRate = 0.0;
-  
+
   List<Achievement> _achievements = [];
   List<Goal> _recentGoals = [];
-  
+
   // 필터링 상태
   String _searchText = '';
   String _selectedFilter = '전체'; // 전체, 7일, 30일
@@ -47,7 +47,7 @@ class _HistoryScreenState extends State<HistoryScreen>
   /// 데이터 로드
   Future<void> _loadData() async {
     final goalProvider = context.read<GoalProviderInterface>();
-    
+
     final results = await Future.wait([
       goalProvider.getStreakDays(),
       goalProvider.getAchievementRate(days: 7),
@@ -70,7 +70,7 @@ class _HistoryScreenState extends State<HistoryScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5), // 더 진한 회색 배경
+      backgroundColor: AppColors.backgroundLight, // Genesis Travel 테마 배경
       appBar: AppBar(
         title: const Text(
           '달성 히스토리',
@@ -80,7 +80,7 @@ class _HistoryScreenState extends State<HistoryScreen>
             fontSize: 18,
           ),
         ),
-        backgroundColor: const Color(0xFF8B7355), // 더 어두운 갈색 톤
+        backgroundColor: AppColors.skyBlue, // 하늘색 배경
         elevation: 2,
         actions: [
           IconButton(
@@ -110,10 +110,7 @@ class _HistoryScreenState extends State<HistoryScreen>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          _buildStatisticsTab(),
-          _buildHistoryTab(),
-        ],
+        children: [_buildStatisticsTab(), _buildHistoryTab()],
       ),
     );
   }
@@ -130,14 +127,14 @@ class _HistoryScreenState extends State<HistoryScreen>
           children: [
             // 연속 달성 일수 카드
             _buildStreakCard(),
-            
+
             const SizedBox(height: 16),
-            
+
             // 달성률 통계
             _buildAchievementRatesCard(),
-            
+
             const SizedBox(height: 16),
-            
+
             // 최근 활동
             _buildRecentActivityCard(),
           ],
@@ -152,52 +149,53 @@ class _HistoryScreenState extends State<HistoryScreen>
       children: [
         // 필터링 컨트롤
         _buildFilterControls(),
-        
+
         // 기록 리스트
         Expanded(
           child: RefreshIndicator(
             onRefresh: _loadData,
-            child: _getFilteredAchievements().isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.emoji_events,
-                          size: 64,
-                          color: AppColors.textSecondary,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          _achievements.isEmpty 
-                              ? '아직 달성한 목표가 없습니다'
-                              : '조건에 맞는 기록이 없습니다',
-                          style: TextStyle(
-                            fontSize: 16,
+            child:
+                _getFilteredAchievements().isEmpty
+                    ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.emoji_events,
+                            size: 64,
                             color: AppColors.textSecondary,
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _achievements.isEmpty 
-                              ? '첫 번째 목표를 달성해보세요!'
-                              : '다른 조건으로 검색해보세요',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textSecondary,
+                          const SizedBox(height: 16),
+                          Text(
+                            _achievements.isEmpty
+                                ? '아직 달성한 목표가 없습니다'
+                                : '조건에 맞는 기록이 없습니다',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: AppColors.textSecondary,
+                            ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          Text(
+                            _achievements.isEmpty
+                                ? '첫 번째 목표를 달성해보세요!'
+                                : '다른 조건으로 검색해보세요',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                    : ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _getFilteredAchievements().length,
+                      itemBuilder: (context, index) {
+                        final achievement = _getFilteredAchievements()[index];
+                        return _buildAchievementItem(achievement);
+                      },
                     ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _getFilteredAchievements().length,
-                    itemBuilder: (context, index) {
-                      final achievement = _getFilteredAchievements()[index];
-                      return _buildAchievementItem(achievement);
-                    },
-                  ),
           ),
         ),
       ],
@@ -210,7 +208,7 @@ class _HistoryScreenState extends State<HistoryScreen>
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [const Color(0xFF4A90E2), const Color(0xFF7B68EE)], // 더 진한 블루 그라데이션
+          colors: AppColors.skyGradient, // Genesis Travel 하늘 그라데이션
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -259,13 +257,8 @@ class _HistoryScreenState extends State<HistoryScreen>
                   ),
                 ),
                 Text(
-                  _streakDays > 0 
-                      ? '계속 이 상태를 유지해보세요!' 
-                      : '새로운 연속 달성을 시작해보세요!',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.white70,
-                  ),
+                  _streakDays > 0 ? '계속 이 상태를 유지해보세요!' : '새로운 연속 달성을 시작해보세요!',
+                  style: const TextStyle(fontSize: 12, color: Colors.white70),
                 ),
               ],
             ),
@@ -303,11 +296,11 @@ class _HistoryScreenState extends State<HistoryScreen>
             ),
           ),
           const SizedBox(height: 20),
-          _buildProgressItem('이번 주', _weeklyRate, const Color(0xFF2ECC71)),
+          _buildProgressItem('이번 주', _weeklyRate, AppColors.journeyStart),
           const SizedBox(height: 16),
-          _buildProgressItem('이번 달', _monthlyRate, const Color(0xFF9B59B6)),
+          _buildProgressItem('이번 달', _monthlyRate, AppColors.journeyProgress),
           const SizedBox(height: 16),
-          _buildProgressItem('전체', _overallRate, const Color(0xFFE67E22)),
+          _buildProgressItem('전체', _overallRate, AppColors.journeyComplete),
         ],
       ),
     );
@@ -353,10 +346,8 @@ class _HistoryScreenState extends State<HistoryScreen>
 
   /// 최근 활동 카드
   Widget _buildRecentActivityCard() {
-    final recentCompletedGoals = _recentGoals
-        .where((goal) => goal.isCompleted)
-        .take(5)
-        .toList();
+    final recentCompletedGoals =
+        _recentGoals.where((goal) => goal.isCompleted).take(5).toList();
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -387,41 +378,40 @@ class _HistoryScreenState extends State<HistoryScreen>
           if (recentCompletedGoals.isEmpty)
             Text(
               '최근 달성한 목표가 없습니다',
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
             )
           else
-            ...recentCompletedGoals.map((goal) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.check_circle,
-                        size: 16,
-                        color: AppColors.success,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          goal.title,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ),
-                      Text(
-                        goal.formattedCompletedDate,
+            ...recentCompletedGoals.map(
+              (goal) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.check_circle,
+                      size: 16,
+                      color: AppColors.success,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        goal.title,
                         style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
+                          fontSize: 14,
+                          color: AppColors.textPrimary,
                         ),
                       ),
-                    ],
-                  ),
-                )),
+                    ),
+                    Text(
+                      goal.formattedCompletedDate,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -457,12 +447,15 @@ class _HistoryScreenState extends State<HistoryScreen>
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(color: Colors.grey.shade300),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
             ),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // 필터 버튼들
           Row(
             children: [
@@ -479,19 +472,23 @@ class _HistoryScreenState extends State<HistoryScreen>
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                   ),
-                  items: ['전체', '7일', '30일'].map((filter) {
-                    return DropdownMenuItem(
-                      value: filter,
-                      child: Text(filter),
-                    );
-                  }).toList(),
+                  items:
+                      ['전체', '7일', '30일'].map((filter) {
+                        return DropdownMenuItem(
+                          value: filter,
+                          child: Text(filter),
+                        );
+                      }).toList(),
                 ),
               ),
-              
+
               const SizedBox(width: 12),
-              
+
               // 달성 상태 필터
               FilterChip(
                 label: const Text('달성한 목표만'),
@@ -514,25 +511,35 @@ class _HistoryScreenState extends State<HistoryScreen>
   /// 필터링된 달성 기록 가져오기
   List<Achievement> _getFilteredAchievements() {
     List<Achievement> filtered = List.from(_achievements);
-    
+
     // 검색 텍스트로 필터링
     if (_searchText.isNotEmpty) {
-      filtered = filtered.where((achievement) =>
-          achievement.celebrationMessage.toLowerCase().contains(_searchText.toLowerCase())).toList();
+      filtered =
+          filtered
+              .where(
+                (achievement) => achievement.celebrationMessage
+                    .toLowerCase()
+                    .contains(_searchText.toLowerCase()),
+              )
+              .toList();
     }
-    
+
     // 기간으로 필터링
     if (_selectedFilter != '전체') {
       final now = DateTime.now();
       final filterDays = _selectedFilter == '7일' ? 7 : 30;
       final filterDate = now.subtract(Duration(days: filterDays));
-      
-      filtered = filtered.where((achievement) =>
-          achievement.achievedDate.isAfter(filterDate)).toList();
+
+      filtered =
+          filtered
+              .where(
+                (achievement) => achievement.achievedDate.isAfter(filterDate),
+              )
+              .toList();
     }
-    
+
     // 달성 상태로 필터링 (Achievement는 이미 달성된 것들이므로 여기서는 의미없지만 구조상 유지)
-    
+
     return filtered;
   }
 
@@ -611,4 +618,4 @@ class _HistoryScreenState extends State<HistoryScreen>
       ),
     );
   }
-} 
+}

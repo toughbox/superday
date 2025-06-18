@@ -27,8 +27,6 @@ class SuperDayApp extends StatelessWidget {
       child: MaterialApp(
         title: AppStrings.appName,
         theme: AppThemes.lightTheme,
-        darkTheme: AppThemes.darkTheme,
-        themeMode: ThemeMode.system,
         home: const MainScreen(),
         debugShowCheckedModeBanner: false,
       ),

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'constants/colors.dart';
 import 'constants/themes.dart';
 import 'constants/strings.dart';
 import 'services/goal_provider.dart';
+import 'services/web_goal_provider.dart';
 import 'services/goal_provider_interface.dart';
 import 'screens/home_screen.dart';
 import 'screens/calendar_screen.dart';
@@ -21,7 +23,7 @@ class SuperDayApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<GoalProviderInterface>(
-      create: (context) => GoalProvider(),
+      create: (context) => kIsWeb ? WebGoalProvider() : GoalProvider(),
       child: MaterialApp(
         title: AppStrings.appName,
         theme: AppThemes.lightTheme,
@@ -43,6 +45,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  bool _isInitialized = false;
 
   // 실제 화면들
   final List<Widget> _screens = [
@@ -53,7 +56,49 @@ class _MainScreenState extends State<MainScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialized) {
+      _initializeProvider();
+    }
+  }
+
+  /// Provider 초기화
+  Future<void> _initializeProvider() async {
+    final goalProvider = context.read<GoalProviderInterface>();
+    await goalProvider.initialize();
+    if (mounted) {
+      setState(() {
+        _isInitialized = true;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: AppColors.primaryMint),
+              const SizedBox(height: 16),
+              Text(
+                '앱을 준비하고 있습니다...',
+                style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: _screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(

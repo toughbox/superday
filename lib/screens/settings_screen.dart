@@ -28,8 +28,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadSettings();
     _loadAppInfo();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadSettings();
   }
 
   /// 설정 로드
@@ -209,8 +214,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-
-
   /// 액션 타일 위젯
   Widget _buildActionTile({
     required IconData icon,
@@ -248,8 +251,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // TODO: 테마 변경 로직 구현
     _showSnackBar('다크모드는 추후 업데이트에서 지원됩니다');
   }
-
-
 
   /// 데이터 내보내기
   Future<void> _exportData() async {

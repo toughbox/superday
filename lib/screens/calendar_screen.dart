@@ -4,7 +4,6 @@ import 'package:table_calendar/table_calendar.dart';
 import '../services/goal_provider_interface.dart';
 import '../models/goal.dart';
 import '../constants/colors.dart';
-import '../constants/strings.dart';
 import '../widgets/goal_item.dart';
 
 class CalendarScreen extends StatefulWidget {
@@ -265,7 +264,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         final completedCount =
                             goals.where((g) => g.isCompleted).length;
                         return Text(
-                          '목표 ${goals.length}개 중 ${completedCount}개 달성',
+                          '목표 ${goals.length}개 중 $completedCount개 달성',
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.white70,

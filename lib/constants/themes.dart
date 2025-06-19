@@ -144,15 +144,15 @@ class AppThemes {
 
       // CheckBox 테마
       checkboxTheme: CheckboxThemeData(
-        fillColor: MaterialStateProperty.resolveWith<Color>((
-          Set<MaterialState> states,
+        fillColor: WidgetStateProperty.resolveWith<Color>((
+          Set<WidgetState> states,
         ) {
-          if (states.contains(MaterialState.selected)) {
+          if (states.contains(WidgetState.selected)) {
             return AppColors.success;
           }
           return AppColors.surface;
         }),
-        checkColor: MaterialStateProperty.all(AppColors.textOnPrimary),
+        checkColor: WidgetStateProperty.all(AppColors.textOnPrimary),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
       ),
 

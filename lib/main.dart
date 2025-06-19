@@ -11,6 +11,7 @@ import 'screens/home_screen.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +28,7 @@ class SuperDayApp extends StatelessWidget {
       child: MaterialApp(
         title: AppStrings.appName,
         theme: AppThemes.lightTheme,
-        home: const MainScreen(),
+        home: const SplashScreen(),
         debugShowCheckedModeBanner: false,
       ),
     );

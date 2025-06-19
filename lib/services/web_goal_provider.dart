@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import '../models/goal.dart';
 import '../models/achievement.dart';
 import 'web_goal_service.dart';
@@ -14,6 +13,20 @@ class WebGoalProvider extends GoalProviderInterface {
   List<Achievement> _achievements = [];
   bool _isLoading = false;
   String? _errorMessage;
+
+  // 생성자에서 자동으로 초기화
+  WebGoalProvider() {
+    _autoInitialize();
+  }
+
+  /// 자동 초기화 메소드
+  Future<void> _autoInitialize() async {
+    try {
+      await initialize();
+    } catch (e) {
+      print('WebGoalProvider 초기화 중 오류: $e');
+    }
+  }
 
   // Getters
   @override

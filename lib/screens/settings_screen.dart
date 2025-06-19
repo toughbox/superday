@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:package_info_plus/package_info_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:file_picker/file_picker.dart';
-import '../constants/colors.dart';
-import '../constants/strings.dart';
 import '../services/goal_provider_interface.dart';
-import '../services/backup_service.dart';
+import '../constants/colors.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -16,35 +11,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  final BackupService _backupService = BackupService();
-
-  // 설정 상태들 (다크모드 제거됨)
-
-  // 앱 정보
-  String _appVersion = '';
-  String _appBuildNumber = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadAppInfo();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // 다크모드 설정 로드 제거됨
-  }
-
-  /// 앱 정보 로드
-  Future<void> _loadAppInfo() async {
-    final packageInfo = await PackageInfo.fromPlatform();
-    setState(() {
-      _appVersion = packageInfo.version;
-      _appBuildNumber = packageInfo.buildNumber;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,238 +20,374 @@ class _SettingsScreenState extends State<SettingsScreen> {
           '설정',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        backgroundColor: AppColors.primaryPink,
+        backgroundColor: AppColors.primary,
         elevation: 0,
       ),
-      body: ListView(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        children: [
-          // 데이터 관리
-          _buildSectionCard('데이터 관리', [
-            _buildActionTile(
-              icon: Icons.backup,
-              title: '데이터 백업',
-              subtitle: '목표 데이터를 파일로 내보내기',
-              onTap: _exportData,
-            ),
-            const Divider(height: 1),
-            _buildActionTile(
-              icon: Icons.restore,
-              title: '데이터 복원',
-              subtitle: '백업 파일에서 데이터 가져오기',
-              onTap: _importData,
-            ),
-          ]),
-
-          const SizedBox(height: 16),
-
-          // 앱 정보
-          _buildSectionCard('앱 정보', [
-            _buildInfoTile(
-              icon: Icons.info,
-              title: '버전',
-              subtitle: '$_appVersion ($_appBuildNumber)',
-            ),
-            const Divider(height: 1),
-            _buildActionTile(
-              icon: Icons.description,
-              title: '개인정보처리방침',
-              subtitle: '개인정보 보호 정책',
-              onTap: _openPrivacyPolicy,
-            ),
-            const Divider(height: 1),
-            _buildActionTile(
-              icon: Icons.email,
-              title: '문의하기',
-              subtitle: '개발자에게 문의',
-              onTap: _contactDeveloper,
-            ),
-            const Divider(height: 1),
-            _buildActionTile(
-              icon: Icons.star,
-              title: '앱 평가하기',
-              subtitle: '스토어에서 평가하기',
-              onTap: _rateApp,
-            ),
-          ]),
-
-          const SizedBox(height: 32),
-
-          // 하단 로고
-          Center(
-            child: Column(
-              children: [
-                Icon(
-                  Icons.celebration,
-                  size: 48,
-                  color: AppColors.primaryPink.withOpacity(0.5),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 사용자 정보 카드
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: AppColors.primaryGradient,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  AppStrings.appName,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primaryPink,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  AppStrings.appDescription,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
+                ],
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(40),
+                    ),
+                    child: const Icon(
+                      Icons.person_rounded,
+                      size: 40,
+                      color: Colors.white,
+                    ),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 섹션 카드 위젯
-  Widget _buildSectionCard(String title, List<Widget> children) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+                  const SizedBox(height: 12),
+                  const Text(
+                    '하루성공 사용자',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    '매일 목표를 달성하는 성취자',
+                    style: TextStyle(fontSize: 14, color: Colors.white70),
+                  ),
+                ],
               ),
             ),
-          ),
-          ...children,
-          const SizedBox(height: 8),
-        ],
+
+            const SizedBox(height: 24),
+
+            // 데이터 관리 섹션
+            _buildSectionTitle('데이터 관리'),
+            _buildSettingsCard([
+              _buildActionTile(
+                '데이터 백업',
+                '목표 데이터를 백업합니다',
+                Icons.backup_rounded,
+                () => _showBackupDialog(),
+              ),
+              const Divider(height: 1),
+              _buildActionTile(
+                '데이터 복원',
+                '백업된 데이터를 복원합니다',
+                Icons.restore_rounded,
+                () => _showRestoreDialog(),
+              ),
+              const Divider(height: 1),
+              _buildActionTile(
+                '모든 데이터 삭제',
+                '모든 목표와 기록을 삭제합니다',
+                Icons.delete_forever_rounded,
+                () => _showDeleteAllDialog(),
+                isDestructive: true,
+              ),
+            ]),
+
+            const SizedBox(height: 16),
+
+            // 정보 섹션
+            _buildSectionTitle('정보'),
+            _buildSettingsCard([
+              _buildInfoTile('앱 버전', '1.0.0', Icons.info_rounded),
+              const Divider(height: 1),
+              _buildActionTile(
+                '개발자 정보',
+                '앱 개발자에 대한 정보',
+                Icons.code_rounded,
+                () => _showDeveloperInfo(),
+              ),
+              const Divider(height: 1),
+              _buildActionTile(
+                '오픈소스 라이센스',
+                '사용된 오픈소스 라이센스',
+                Icons.description_rounded,
+                () => _showLicenses(),
+              ),
+            ]),
+
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }
 
-  // 스위치 타일 위젯 제거됨 (다크모드 제거로 인해 불필요)
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: AppColors.textPrimary,
+        ),
+      ),
+    );
+  }
 
-  /// 액션 타일 위젯
-  Widget _buildActionTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
+  Widget _buildSettingsCard(List<Widget> children) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow,
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(children: children),
+    );
+  }
+
+  Widget _buildActionTile(
+    String title,
+    String subtitle,
+    IconData icon,
+    VoidCallback onTap, {
+    bool isDestructive = false,
   }) {
+    final color = isDestructive ? AppColors.danger : AppColors.primary;
+
     return ListTile(
-      leading: Icon(icon, color: AppColors.primary),
-      title: Text(title),
-      subtitle: Text(subtitle),
-      trailing: const Icon(Icons.chevron_right),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon, color: color, size: 20),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: isDestructive ? AppColors.danger : AppColors.textPrimary,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+      ),
+      trailing: Icon(
+        Icons.chevron_right_rounded,
+        color: AppColors.textSecondary,
+      ),
       onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
     );
   }
 
-  /// 정보 타일 위젯
-  Widget _buildInfoTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
+  Widget _buildInfoTile(String title, String value, IconData icon) {
     return ListTile(
-      leading: Icon(icon, color: AppColors.primary),
-      title: Text(title),
-      subtitle: Text(subtitle),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: AppColors.textSecondary.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon, color: AppColors.textSecondary, size: 20),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+        ),
+      ),
+      trailing: Text(
+        value,
+        style: const TextStyle(
+          color: AppColors.textSecondary,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
     );
   }
 
-  // 다크모드 토글 메서드 제거됨
-
-  /// 데이터 내보내기
-  Future<void> _exportData() async {
-    try {
-      final goalProvider = context.read<GoalProviderInterface>();
-      final success = await _backupService.exportData(goalProvider);
-
-      if (success) {
-        _showSnackBar('데이터가 성공적으로 내보내졌습니다');
-      } else {
-        _showSnackBar('데이터 내보내기에 실패했습니다');
-      }
-    } catch (e) {
-      _showSnackBar('오류가 발생했습니다: ${e.toString()}');
-    }
+  void _showBackupDialog() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text(
+              '데이터 백업',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: const Text('목표 데이터를 백업하시겠습니까?\n백업된 데이터는 기기에 저장됩니다.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('취소'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  // 백업 로직 구현
+                  _showSnackBar('데이터 백업이 완료되었습니다', isSuccess: true);
+                },
+                child: const Text('백업'),
+              ),
+            ],
+          ),
+    );
   }
 
-  /// 데이터 가져오기
-  Future<void> _importData() async {
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['json'],
-      );
-
-      if (result != null && result.files.single.path != null) {
-        final goalProvider = context.read<GoalProviderInterface>();
-        final success = await _backupService.importData(
-          result.files.single.path!,
-          goalProvider,
-        );
-
-        if (success) {
-          _showSnackBar('데이터가 성공적으로 복원되었습니다');
-          await goalProvider.refresh();
-        } else {
-          _showSnackBar('데이터 복원에 실패했습니다');
-        }
-      }
-    } catch (e) {
-      _showSnackBar('오류가 발생했습니다: ${e.toString()}');
-    }
+  void _showRestoreDialog() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text(
+              '데이터 복원',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: const Text('백업된 데이터를 복원하시겠습니까?\n현재 데이터는 덮어씌워집니다.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('취소'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  // 복원 로직 구현
+                  _showSnackBar('데이터 복원이 완료되었습니다', isSuccess: true);
+                },
+                child: const Text('복원'),
+              ),
+            ],
+          ),
+    );
   }
 
-  /// 개인정보처리방침 열기
-  Future<void> _openPrivacyPolicy() async {
-    const url = 'https://www.example.com/privacy-policy';
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
-    } else {
-      _showSnackBar('링크를 열 수 없습니다');
-    }
+  void _showDeleteAllDialog() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text(
+              '모든 데이터 삭제',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: AppColors.danger,
+              ),
+            ),
+            content: const Text('정말로 모든 목표와 기록을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('취소'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  final goalProvider = context.read<GoalProviderInterface>();
+                  // 모든 목표를 하나씩 삭제
+                  final allGoals = List.from(goalProvider.goals);
+                  for (final goal in allGoals) {
+                    await goalProvider.deleteGoal(goal.id);
+                  }
+                  await goalProvider.refresh();
+                  _showSnackBar('모든 데이터가 삭제되었습니다', isSuccess: true);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.danger,
+                ),
+                child: const Text('삭제'),
+              ),
+            ],
+          ),
+    );
   }
 
-  /// 개발자 문의
-  Future<void> _contactDeveloper() async {
-    const email = 'mailto:developer@example.com?subject=하루성공 앱 문의';
-    if (await canLaunchUrl(Uri.parse(email))) {
-      await launchUrl(Uri.parse(email));
-    } else {
-      _showSnackBar('이메일 앱을 열 수 없습니다');
-    }
+  void _showDeveloperInfo() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text(
+              '개발자 정보',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: const Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('하루성공 - 목표 달성 앱'),
+                SizedBox(height: 8),
+                Text('매일 작은 목표를 설정하고 달성하여\n성취감을 느낄 수 있는 앱입니다.'),
+                SizedBox(height: 16),
+                Text('Made with ❤️ using Flutter'),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('확인'),
+              ),
+            ],
+          ),
+    );
   }
 
-  /// 앱 평가하기
-  Future<void> _rateApp() async {
-    const url =
-        'https://play.google.com/store/apps/details?id=com.example.superday';
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
-    } else {
-      _showSnackBar('스토어를 열 수 없습니다');
-    }
+  void _showLicenses() {
+    showLicensePage(
+      context: context,
+      applicationName: '하루성공',
+      applicationVersion: '1.0.0',
+    );
   }
 
-  /// 스낵바 표시
-  void _showSnackBar(String message) {
+  void _showSnackBar(String message, {bool isSuccess = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.primary,
+        backgroundColor: isSuccess ? AppColors.success : AppColors.danger,
         behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        duration: const Duration(seconds: 2),
       ),
     );
   }

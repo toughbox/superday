@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/goal.dart';
 import '../constants/colors.dart';
 
-class GoalItem extends StatelessWidget {
+class GoalItem extends StatefulWidget {
   final Goal goal;
   final VoidCallback? onTap;
   final VoidCallback? onComplete;
@@ -19,150 +19,307 @@ class GoalItem extends StatelessWidget {
   });
 
   @override
+  State<GoalItem> createState() => _GoalItemState();
+}
+
+class _GoalItemState extends State<GoalItem> with TickerProviderStateMixin {
+  late AnimationController _scaleController;
+  late AnimationController _checkController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _checkAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _scaleController = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+    _checkController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
+    );
+    _checkAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _checkController, curve: Curves.elasticOut),
+    );
+
+    if (widget.goal.isCompleted) {
+      _checkController.value = 1.0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _scaleController.dispose();
+    _checkController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(GoalItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.goal.isCompleted != oldWidget.goal.isCompleted) {
+      if (widget.goal.isCompleted) {
+        _checkController.forward();
+      } else {
+        _checkController.reverse();
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              // 완료 체크박스
-              GestureDetector(
-                onTap: goal.isCompleted ? null : onComplete,
-                child: Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: goal.isCompleted 
-                          ? AppColors.success
-                          : AppColors.primary,
-                      width: 2,
-                    ),
-                    color: goal.isCompleted 
-                        ? AppColors.success
-                        : Colors.transparent,
-                  ),
-                  child: goal.isCompleted
-                      ? const Icon(
-                          Icons.check,
-                          size: 16,
-                          color: Colors.white,
-                        )
-                      : null,
-                ),
-              ),
-              
-              const SizedBox(width: 16),
-              
-              // 목표 텍스트
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      goal.title,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: goal.isCompleted 
-                            ? AppColors.textSecondary
-                            : AppColors.textPrimary,
-                        decoration: goal.isCompleted 
-                            ? TextDecoration.lineThrough
-                            : null,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.schedule,
-                          size: 14,
-                          color: AppColors.textSecondary,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          goal.formattedDate,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        if (goal.isCompleted && goal.completedDate != null) ...[
-                          const SizedBox(width: 12),
-                          Icon(
-                            Icons.check_circle,
-                            size: 14,
-                            color: AppColors.success,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            goal.formattedCompletedDate,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: AppColors.success,
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color:
+                widget.goal.isCompleted
+                    ? AppColors.success.withOpacity(0.3)
+                    : AppColors.border,
+            width: widget.goal.isCompleted ? 2 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color:
+                  widget.goal.isCompleted
+                      ? AppColors.success.withOpacity(0.1)
+                      : AppColors.shadow,
+              blurRadius: widget.goal.isCompleted ? 12 : 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: widget.onTap,
+            onTapDown: (_) => _scaleController.forward(),
+            onTapUp: (_) => _scaleController.reverse(),
+            onTapCancel: () => _scaleController.reverse(),
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  // 완료 체크박스
+                  GestureDetector(
+                    onTap: widget.onComplete,
+                    child: AnimatedBuilder(
+                      animation: _checkAnimation,
+                      builder: (context, child) {
+                        return Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color:
+                                widget.goal.isCompleted
+                                    ? AppColors.success
+                                    : AppColors.surface,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color:
+                                  widget.goal.isCompleted
+                                      ? AppColors.success
+                                      : AppColors.border,
+                              width: 2,
                             ),
                           ),
-                        ],
+                          child:
+                              widget.goal.isCompleted
+                                  ? Transform.scale(
+                                    scale: _checkAnimation.value,
+                                    child: const Icon(
+                                      Icons.check,
+                                      size: 16,
+                                      color: AppColors.textOnPrimary,
+                                    ),
+                                  )
+                                  : null,
+                        );
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(width: 16),
+
+                  // 목표 내용
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.goal.title,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color:
+                                widget.goal.isCompleted
+                                    ? AppColors.textSecondary
+                                    : AppColors.textPrimary,
+                            decoration:
+                                widget.goal.isCompleted
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                            decorationColor: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.schedule_rounded,
+                              size: 14,
+                              color: AppColors.textTertiary,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              widget.goal.formattedDate,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textTertiary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            if (widget.goal.isCompleted &&
+                                widget.goal.completedDate != null) ...[
+                              const SizedBox(width: 12),
+                              Icon(
+                                Icons.check_circle_rounded,
+                                size: 14,
+                                color: AppColors.success,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                widget.goal.formattedCompletedDate,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.success,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-              
-              // 메뉴 버튼
-              if (!goal.isCompleted) ...[
-                PopupMenuButton<String>(
-                  onSelected: (value) {
-                    switch (value) {
-                      case 'edit':
-                        onEdit?.call();
-                        break;
-                      case 'delete':
-                        onDelete?.call();
-                        break;
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit, size: 18),
-                          SizedBox(width: 8),
-                          Text('수정'),
-                        ],
-                      ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete, size: 18, color: Colors.red),
-                          SizedBox(width: 8),
-                          Text('삭제', style: TextStyle(color: Colors.red)),
-                        ],
-                      ),
-                    ),
-                  ],
-                  child: const Icon(
-                    Icons.more_vert,
-                    color: Colors.grey,
                   ),
-                ),
-              ],
-            ],
+
+                  // 액션 버튼들
+                  if (!widget.goal.isCompleted) ...[
+                    // 수정 버튼
+                    if (widget.onEdit != null)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceVariant,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: widget.onEdit,
+                              borderRadius: BorderRadius.circular(10),
+                              child: const Icon(
+                                Icons.edit_rounded,
+                                size: 18,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+
+                  // 삭제 버튼
+                  if (widget.onDelete != null)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: AppColors.danger.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: widget.onDelete,
+                            borderRadius: BorderRadius.circular(10),
+                            child: const Icon(
+                              Icons.delete_outline_rounded,
+                              size: 18,
+                              color: AppColors.danger,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  // 완료된 목표의 성취 뱃지
+                  if (widget.goal.isCompleted)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: ScaleTransition(
+                        scale: _checkAnimation,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: AppColors.successGradient,
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.success.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.emoji_events,
+                                size: 14,
+                                color: AppColors.textOnPrimary,
+                              ),
+                              const SizedBox(width: 4),
+                              const Text(
+                                '달성',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textOnPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
     );
   }
-} 
+}

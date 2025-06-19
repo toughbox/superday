@@ -1,259 +1,202 @@
 import 'package:flutter/material.dart';
 import 'colors.dart';
 
-/// 하루성공 앱의 테마 설정 (Genesis Travel 여정 컨셉)
-/// 목표 달성을 여행의 여정으로 표현하는 디자인
+/// HeroUI 스타일의 테마 시스템
 class AppThemes {
-  // 여행 테마 (Genesis 스타일)
+  /// 라이트 테마
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
 
-      // 색상 스키마 (여행 테마)
+      // 색상 스키마
       colorScheme: ColorScheme.light(
-        primary: AppColors.skyBlue,
-        secondary: AppColors.sunsetOrange,
-        surface: AppColors.surfaceWhite,
-        background: AppColors.backgroundLight,
-        onPrimary: AppColors.textLight,
-        onSecondary: AppColors.textLight,
+        primary: AppColors.primary,
+        secondary: AppColors.secondary,
+        surface: AppColors.surface,
+        background: AppColors.background,
+        error: AppColors.danger,
+        onPrimary: AppColors.textOnPrimary,
+        onSecondary: AppColors.textOnPrimary,
         onSurface: AppColors.textPrimary,
         onBackground: AppColors.textPrimary,
-        error: AppColors.error,
-        onError: AppColors.textLight,
+        onError: AppColors.textOnPrimary,
       ),
 
-      // 앱바 테마 (하늘 같은 디자인)
-      appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.skyBlue,
-        foregroundColor: AppColors.textLight,
+      // 폰트 설정
+      fontFamily: 'Pretendard',
+
+      // 앱바 테마
+      appBarTheme: const AppBarTheme(
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.textOnPrimary,
         elevation: 0,
-        shadowColor: AppColors.shadow,
         centerTitle: true,
-        titleTextStyle: const TextStyle(
-          fontSize: 22,
+        titleTextStyle: TextStyle(
+          fontSize: 20,
           fontWeight: FontWeight.w600,
-          color: AppColors.textLight,
-          letterSpacing: 0.5,
-        ),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+          color: AppColors.textOnPrimary,
         ),
       ),
 
-      // 카드 테마 (구름 같은 부드러운 느낌)
-      cardTheme: CardThemeData(
-        color: AppColors.cardBackground,
-        elevation: 6,
+      // 카드 테마
+      cardTheme: CardTheme(
+        color: AppColors.surface,
+        elevation: 4,
         shadowColor: AppColors.shadow,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: BorderSide(
-            color: AppColors.divider.withOpacity(0.3),
-            width: 0.5,
-          ),
-        ),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      ),
-
-      // 버튼 테마 (여행 출발 느낌)
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.skyBlue,
-          foregroundColor: AppColors.textLight,
-          elevation: 4,
-          shadowColor: AppColors.shadow,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.8,
-          ),
-        ),
-      ),
-
-      // 아웃라인 버튼 (여행 계획)
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.skyBlue,
-          side: BorderSide(color: AppColors.skyBlue, width: 2),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
-        ),
-      ),
-
-      // 플로팅 액션 버튼 (목적지 추가)
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: AppColors.sunsetOrange,
-        foregroundColor: AppColors.textLight,
-        elevation: 8,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
 
-      // 입력 필드 테마 (여행 검색 느낌)
+      // ElevatedButton 테마
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: AppColors.textOnPrimary,
+          elevation: 4,
+          shadowColor: AppColors.shadow,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+      ),
+
+      // TextButton 테마
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.primary,
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
+
+      // OutlinedButton 테마
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.primary,
+          side: const BorderSide(color: AppColors.primary, width: 1),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+      ),
+
+      // FloatingActionButton 테마
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.textOnPrimary,
+        elevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        ),
+      ),
+
+      // InputDecoration 테마
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: AppColors.border, width: 1.5),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: AppColors.border, width: 1.5),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: AppColors.skyBlue, width: 2.5),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: AppColors.error, width: 1.5),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.danger),
         ),
-        fillColor: AppColors.surfaceCloud,
         filled: true,
+        fillColor: AppColors.surfaceVariant,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 18,
+          horizontal: 16,
+          vertical: 12,
         ),
-        hintStyle: TextStyle(
-          color: AppColors.textMuted,
+        hintStyle: TextStyle(color: AppColors.textSecondary, fontSize: 16),
+      ),
+
+      // ListTile 테마
+      listTileTheme: const ListTileThemeData(
+        contentPadding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        titleTextStyle: TextStyle(
           fontSize: 16,
-          fontWeight: FontWeight.w400,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+        ),
+        subtitleTextStyle: TextStyle(
+          fontSize: 14,
+          color: AppColors.textSecondary,
         ),
       ),
 
-      // 텍스트 테마 (여행 가이드북 스타일)
-      textTheme: const TextTheme(
-        // 헤드라인 (목적지 제목)
-        headlineLarge: TextStyle(
-          fontSize: 34,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textPrimary,
-          letterSpacing: -0.8,
-          height: 1.1,
-        ),
-        headlineMedium: TextStyle(
-          fontSize: 26,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textPrimary,
-          letterSpacing: -0.3,
-          height: 1.2,
-        ),
-        headlineSmall: TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
-          letterSpacing: 0,
-          height: 1.3,
-        ),
-
-        // 바디 텍스트 (여행 설명)
-        bodyLarge: TextStyle(
-          fontSize: 17,
-          fontWeight: FontWeight.w400,
-          color: AppColors.textPrimary,
-          height: 1.6,
-          letterSpacing: 0.1,
-        ),
-        bodyMedium: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w400,
-          color: AppColors.textPrimary,
-          height: 1.5,
-          letterSpacing: 0.1,
-        ),
-        bodySmall: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w400,
-          color: AppColors.textMuted,
-          height: 1.4,
-          letterSpacing: 0.2,
-        ),
-
-        // 라벨 (여행 태그)
-        labelLarge: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
-          letterSpacing: 0.5,
-        ),
-        labelMedium: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w500,
-          color: AppColors.textPrimary,
-          letterSpacing: 0.8,
-        ),
-      ),
-
-      // 구분선 테마
+      // Divider 테마
       dividerTheme: const DividerThemeData(
-        color: AppColors.divider,
+        color: AppColors.border,
         thickness: 1,
         space: 1,
       ),
 
-      // 스위치 테마 (여행 모드 전환)
-      switchTheme: SwitchThemeData(
-        thumbColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
-            return AppColors.sunsetOrange;
-          }
-          return AppColors.textMuted;
-        }),
-        trackColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
-            return AppColors.sunsetOrange.withOpacity(0.4);
-          }
-          return AppColors.divider;
-        }),
-      ),
-
-      // 체크박스 테마 (체크리스트)
+      // CheckBox 테마
       checkboxTheme: CheckboxThemeData(
-        fillColor: MaterialStateProperty.resolveWith((states) {
+        fillColor: MaterialStateProperty.resolveWith<Color>((
+          Set<MaterialState> states,
+        ) {
           if (states.contains(MaterialState.selected)) {
-            return AppColors.journeyComplete;
+            return AppColors.success;
           }
-          return Colors.transparent;
+          return AppColors.surface;
         }),
-        checkColor: MaterialStateProperty.all(AppColors.textLight),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        checkColor: MaterialStateProperty.all(AppColors.textOnPrimary),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
       ),
 
-      // 진행 표시기 테마 (여행 진행도)
+      // LinearProgressIndicator 테마
       progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: AppColors.journeyProgress,
-        linearTrackColor: AppColors.divider,
+        color: AppColors.primary,
+        linearTrackColor: AppColors.border,
       ),
 
-      // 칩 테마 (여행 태그)
+      // Chip 테마
       chipTheme: ChipThemeData(
-        backgroundColor: AppColors.surfaceCloud,
-        deleteIconColor: AppColors.textMuted,
-        disabledColor: AppColors.divider,
-        selectedColor: AppColors.lightSky.withOpacity(0.2),
-        secondarySelectedColor: AppColors.sunsetOrange.withOpacity(0.2),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        labelStyle: const TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
+        backgroundColor: AppColors.surfaceVariant,
+        deleteIconColor: AppColors.textSecondary,
+        disabledColor: AppColors.border,
+        selectedColor: AppColors.primary.withOpacity(0.2),
+        secondarySelectedColor: AppColors.secondary.withOpacity(0.2),
+        labelStyle: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
         secondaryLabelStyle: const TextStyle(
-          color: AppColors.textLight,
+          color: AppColors.textOnPrimary,
           fontSize: 14,
-          fontWeight: FontWeight.w500,
         ),
         brightness: Brightness.light,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      ),
+
+      // SnackBar 테마
+      snackBarTheme: const SnackBarThemeData(
+        backgroundColor: AppColors.textPrimary,
+        contentTextStyle: TextStyle(
+          color: AppColors.textOnPrimary,
+          fontSize: 14,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+        ),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
 
-  // 다크 테마 제거됨 (라이트 테마만 사용)
+  /// 다크 테마 (향후 추가 가능)
+  static ThemeData get darkTheme {
+    return lightTheme.copyWith(
+      brightness: Brightness.dark,
+      // 다크 테마 커스터마이징 (향후 구현)
+    );
+  }
 }

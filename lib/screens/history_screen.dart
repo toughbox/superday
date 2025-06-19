@@ -5,6 +5,7 @@ import '../models/goal.dart';
 import '../models/achievement.dart';
 import '../constants/colors.dart';
 import '../constants/strings.dart';
+import '../widgets/goal_item.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -19,12 +20,16 @@ class _HistoryScreenState extends State<HistoryScreen>
 
   // 통계 데이터
   int _streakDays = 0;
+  double _todayRate = 0.0;
   double _weeklyRate = 0.0;
   double _monthlyRate = 0.0;
   double _overallRate = 0.0;
 
   List<Achievement> _achievements = [];
-  List<Goal> _recentGoals = [];
+  List<Goal> _allGoals = [];
+  List<Goal> _todayGoals = [];
+  List<Goal> _weekGoals = [];
+  List<Goal> _monthGoals = [];
 
   // 필터링 상태
   String _searchText = '';
@@ -34,7 +39,7 @@ class _HistoryScreenState extends State<HistoryScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _loadData();
   }
 
@@ -63,559 +68,324 @@ class _HistoryScreenState extends State<HistoryScreen>
       _monthlyRate = results[2] as double;
       _overallRate = results[3] as double;
       _achievements = results[4] as List<Achievement>;
-      _recentGoals = results[5] as List<Goal>;
+      _allGoals = results[5] as List<Goal>;
     });
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final weekStart = today.subtract(Duration(days: now.weekday - 1));
+    final monthStart = DateTime(now.year, now.month, 1);
+
+    setState(() {
+      _todayGoals =
+          _allGoals.where((goal) {
+            final goalDate = DateTime(
+              goal.createdDate.year,
+              goal.createdDate.month,
+              goal.createdDate.day,
+            );
+            return goalDate == today;
+          }).toList();
+
+      _weekGoals =
+          _allGoals.where((goal) {
+            final goalDate = DateTime(
+              goal.createdDate.year,
+              goal.createdDate.month,
+              goal.createdDate.day,
+            );
+            return goalDate.isAfter(
+                  weekStart.subtract(const Duration(days: 1)),
+                ) &&
+                goalDate.isBefore(today.add(const Duration(days: 1)));
+          }).toList();
+
+      _monthGoals =
+          _allGoals.where((goal) {
+            return goal.createdDate.year == now.year &&
+                goal.createdDate.month == now.month;
+          }).toList();
+
+      _todayRate = _calculateRate(_todayGoals);
+      _weeklyRate = _calculateRate(_weekGoals);
+      _monthlyRate = _calculateRate(_monthGoals);
+      _overallRate = _calculateRate(_allGoals);
+    });
+  }
+
+  double _calculateRate(List<Goal> goals) {
+    if (goals.isEmpty) return 0.0;
+    final completed = goals.where((g) => g.isCompleted).length;
+    return completed / goals.length;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight, // Genesis Travel 테마 배경
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text(
-          '달성 히스토리',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            fontSize: 18,
-          ),
+          '성취 기록',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        backgroundColor: AppColors.skyBlue, // 하늘색 배경
-        elevation: 2,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
-            onPressed: _loadData,
-          ),
-        ],
+        backgroundColor: AppColors.primary,
+        elevation: 0,
         bottom: TabBar(
           controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white60,
           indicatorColor: Colors.white,
           indicatorWeight: 3,
-          labelStyle: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-          ),
-          unselectedLabelStyle: const TextStyle(
-            fontWeight: FontWeight.normal,
-            fontSize: 14,
-          ),
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          labelStyle: const TextStyle(fontWeight: FontWeight.w600),
           tabs: const [
-            Tab(text: '통계', icon: Icon(Icons.analytics)),
-            Tab(text: '기록', icon: Icon(Icons.history)),
+            Tab(text: '오늘'),
+            Tab(text: '이번 주'),
+            Tab(text: '이번 달'),
+            Tab(text: '전체'),
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [_buildStatisticsTab(), _buildHistoryTab()],
-      ),
-    );
-  }
-
-  /// 통계 탭 구성
-  Widget _buildStatisticsTab() {
-    return RefreshIndicator(
-      onRefresh: _loadData,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 연속 달성 일수 카드
-            _buildStreakCard(),
-
-            const SizedBox(height: 16),
-
-            // 달성률 통계
-            _buildAchievementRatesCard(),
-
-            const SizedBox(height: 16),
-
-            // 최근 활동
-            _buildRecentActivityCard(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// 기록 탭 구성
-  Widget _buildHistoryTab() {
-    return Column(
-      children: [
-        // 필터링 컨트롤
-        _buildFilterControls(),
-
-        // 기록 리스트
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: _loadData,
-            child:
-                _getFilteredAchievements().isEmpty
-                    ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.emoji_events,
-                            size: 64,
-                            color: AppColors.textSecondary,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            _achievements.isEmpty
-                                ? '아직 달성한 목표가 없습니다'
-                                : '조건에 맞는 기록이 없습니다',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            _achievements.isEmpty
-                                ? '첫 번째 목표를 달성해보세요!'
-                                : '다른 조건으로 검색해보세요',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                    : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _getFilteredAchievements().length,
-                      itemBuilder: (context, index) {
-                        final achievement = _getFilteredAchievements()[index];
-                        return _buildAchievementItem(achievement);
-                      },
-                    ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// 연속 달성 일수 카드
-  Widget _buildStreakCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: AppColors.skyGradient, // Genesis Travel 하늘 그라데이션
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF4A90E2).withOpacity(0.4),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
+      body: Column(
         children: [
+          // 통계 카드
           Container(
-            padding: const EdgeInsets.all(16),
+            width: double.infinity,
+            margin: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.local_fire_department,
-              size: 32,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '연속 달성',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white70,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Text(
-                  '$_streakDays일',
-                  style: const TextStyle(
-                    fontSize: 28,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  _streakDays > 0 ? '계속 이 상태를 유지해보세요!' : '새로운 연속 달성을 시작해보세요!',
-                  style: const TextStyle(fontSize: 12, color: Colors.white70),
+              gradient: const LinearGradient(
+                colors: AppColors.primaryGradient,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 달성률 통계 카드
-  Widget _buildAchievementRatesCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '달성률 통계',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 20),
-          _buildProgressItem('이번 주', _weeklyRate, AppColors.journeyStart),
-          const SizedBox(height: 16),
-          _buildProgressItem('이번 달', _monthlyRate, AppColors.journeyProgress),
-          const SizedBox(height: 16),
-          _buildProgressItem('전체', _overallRate, AppColors.journeyComplete),
-        ],
-      ),
-    );
-  }
-
-  /// 진행률 아이템
-  Widget _buildProgressItem(String label, double rate, Color color) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            Text(
-              '${(rate * 100).toInt()}%',
-              style: TextStyle(
-                fontSize: 14,
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        LinearProgressIndicator(
-          value: rate,
-          backgroundColor: Colors.grey.shade200,
-          valueColor: AlwaysStoppedAnimation<Color>(color),
-          borderRadius: BorderRadius.circular(4),
-          minHeight: 6,
-        ),
-      ],
-    );
-  }
-
-  /// 최근 활동 카드
-  Widget _buildRecentActivityCard() {
-    final recentCompletedGoals =
-        _recentGoals.where((goal) => goal.isCompleted).take(5).toList();
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '최근 달성한 목표',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 16),
-          if (recentCompletedGoals.isEmpty)
-            Text(
-              '최근 달성한 목표가 없습니다',
-              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-            )
-          else
-            ...recentCompletedGoals.map(
-              (goal) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
+            child: Column(
+              children: [
+                const Text(
+                  '📊 성취 통계',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
                   children: [
-                    Icon(
-                      Icons.check_circle,
-                      size: 16,
-                      color: AppColors.success,
-                    ),
-                    const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        goal.title,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppColors.textPrimary,
-                        ),
+                      child: _buildStatItem('전체 목표', '${_allGoals.length}개'),
+                    ),
+                    Container(
+                      width: 1,
+                      height: 40,
+                      color: Colors.white.withOpacity(0.3),
+                    ),
+                    Expanded(
+                      child: _buildStatItem(
+                        '완료된 목표',
+                        '${_allGoals.where((g) => g.isCompleted).length}개',
                       ),
                     ),
-                    Text(
-                      goal.formattedCompletedDate,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
+                    Container(
+                      width: 1,
+                      height: 40,
+                      color: Colors.white.withOpacity(0.3),
+                    ),
+                    Expanded(
+                      child: _buildStatItem(
+                        '전체 달성률',
+                        '${(_overallRate * 100).toInt()}%',
                       ),
                     ),
                   ],
                 ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  /// 필터링 컨트롤
-  Widget _buildFilterControls() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // 검색창
-          TextField(
-            onChanged: (value) {
-              setState(() {
-                _searchText = value;
-              });
-            },
-            decoration: InputDecoration(
-              hintText: '목표 제목으로 검색...',
-              prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey.shade300),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // 필터 버튼들
-          Row(
-            children: [
-              // 기간 필터
-              Expanded(
-                child: DropdownButtonFormField<String>(
-                  value: _selectedFilter,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedFilter = value!;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                  ),
-                  items:
-                      ['전체', '7일', '30일'].map((filter) {
-                        return DropdownMenuItem(
-                          value: filter,
-                          child: Text(filter),
-                        );
-                      }).toList(),
-                ),
-              ),
-
-              const SizedBox(width: 12),
-
-              // 달성 상태 필터
-              FilterChip(
-                label: const Text('달성한 목표만'),
-                selected: _showCompletedOnly,
-                onSelected: (selected) {
-                  setState(() {
-                    _showCompletedOnly = selected;
-                  });
-                },
-                selectedColor: AppColors.primaryMint.withOpacity(0.3),
-                checkmarkColor: AppColors.primaryMint,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 필터링된 달성 기록 가져오기
-  List<Achievement> _getFilteredAchievements() {
-    List<Achievement> filtered = List.from(_achievements);
-
-    // 검색 텍스트로 필터링
-    if (_searchText.isNotEmpty) {
-      filtered =
-          filtered
-              .where(
-                (achievement) => achievement.celebrationMessage
-                    .toLowerCase()
-                    .contains(_searchText.toLowerCase()),
-              )
-              .toList();
-    }
-
-    // 기간으로 필터링
-    if (_selectedFilter != '전체') {
-      final now = DateTime.now();
-      final filterDays = _selectedFilter == '7일' ? 7 : 30;
-      final filterDate = now.subtract(Duration(days: filterDays));
-
-      filtered =
-          filtered
-              .where(
-                (achievement) => achievement.achievedDate.isAfter(filterDate),
-              )
-              .toList();
-    }
-
-    // 달성 상태로 필터링 (Achievement는 이미 달성된 것들이므로 여기서는 의미없지만 구조상 유지)
-
-    return filtered;
-  }
-
-  /// 달성 기록 아이템
-  Widget _buildAchievementItem(Achievement achievement) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF39C12).withOpacity(0.15),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.emoji_events,
-              color: Color(0xFFF39C12),
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  achievement.celebrationMessage,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  achievement.formattedAchievedDate,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
               ],
             ),
           ),
-          if (achievement.isToday)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2ECC71),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Text(
-                '오늘',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+
+          // 기간별 달성률 요약
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                _buildProgressItem('오늘', _todayRate, AppColors.success),
+                const SizedBox(width: 8),
+                _buildProgressItem('이번 주', _weeklyRate, AppColors.primary),
+                const SizedBox(width: 8),
+                _buildProgressItem('이번 달', _monthlyRate, AppColors.secondary),
+              ],
             ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // 탭뷰 목록
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildGoalsList(_todayGoals, '오늘 설정한 목표가 없습니다'),
+                _buildGoalsList(_weekGoals, '이번 주 설정한 목표가 없습니다'),
+                _buildGoalsList(_monthGoals, '이번 달 설정한 목표가 없습니다'),
+                _buildGoalsList(_allGoals, '설정한 목표가 없습니다'),
+              ],
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildStatItem(String label, String value) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.8)),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProgressItem(String label, double rate, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.shadow,
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Text(
+              '${(rate * 100).toInt()}%',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            LinearProgressIndicator(
+              value: rate,
+              backgroundColor: AppColors.border,
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGoalsList(List<Goal> goals, String emptyMessage) {
+    if (goals.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.history_rounded,
+              size: 64,
+              color: AppColors.textSecondary,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              emptyMessage,
+              style: const TextStyle(
+                fontSize: 16,
+                color: AppColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: goals.length,
+      itemBuilder: (context, index) {
+        final goal = goals[index];
+        return Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          child: GoalItem(
+            goal: goal,
+            onTap: () {},
+            onComplete: null, // 기록 화면에서는 완료 기능 비활성화
+            onEdit: null, // 기록 화면에서는 수정 기능 비활성화
+            onDelete: () => _deleteGoal(goal.id),
+          ),
+        );
+      },
+    );
+  }
+
+  void _deleteGoal(String goalId) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text(
+              '목표 삭제',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: const Text('정말로 이 목표를 삭제하시겠습니까?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('취소'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  final goalProvider = context.read<GoalProviderInterface>();
+                  await goalProvider.deleteGoal(goalId);
+                  await _loadData(); // 데이터 새로고침
+                },
+                style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+                child: const Text('삭제'),
+              ),
+            ],
+          ),
     );
   }
 }

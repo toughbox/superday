@@ -86,7 +86,7 @@ class _MainScreenState extends State<MainScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(color: AppColors.primaryMint),
+              CircularProgressIndicator(color: AppColors.primary),
               const SizedBox(height: 16),
               Text(
                 '앱을 준비하고 있습니다...',
@@ -108,7 +108,7 @@ class _MainScreenState extends State<MainScreen> {
             _currentIndex = index;
           });
         },
-        selectedItemColor: AppColors.primaryMint,
+        selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.textSecondary,
         items: const [
           BottomNavigationBarItem(
@@ -145,7 +145,7 @@ class HomeTabPlaceholder extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.star, size: 64, color: AppColors.primaryMint),
+            Icon(Icons.star, size: 64, color: AppColors.primary),
             SizedBox(height: 16),
             Text(
               '홈 화면',
@@ -178,11 +178,7 @@ class CalendarTabPlaceholder extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.calendar_month,
-              size: 64,
-              color: AppColors.primaryLavender,
-            ),
+            Icon(Icons.calendar_month, size: 64, color: AppColors.secondary),
             SizedBox(height: 16),
             Text(
               '달력 화면',
@@ -215,7 +211,7 @@ class HistoryTabPlaceholder extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.history, size: 64, color: AppColors.primaryYellow),
+            Icon(Icons.history, size: 64, color: AppColors.secondary),
             SizedBox(height: 16),
             Text(
               '히스토리 화면',
@@ -248,7 +244,7 @@ class SettingsTabPlaceholder extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.settings, size: 64, color: AppColors.primaryPink),
+            Icon(Icons.settings, size: 64, color: AppColors.primary),
             SizedBox(height: 16),
             Text(
               '설정 화면',

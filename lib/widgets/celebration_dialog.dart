@@ -4,10 +4,7 @@ import '../constants/colors.dart';
 class CelebrationDialog extends StatefulWidget {
   final String message;
 
-  const CelebrationDialog({
-    super.key,
-    required this.message,
-  });
+  const CelebrationDialog({super.key, required this.message});
 
   @override
   State<CelebrationDialog> createState() => _CelebrationDialogState();
@@ -16,174 +13,170 @@ class CelebrationDialog extends StatefulWidget {
 class _CelebrationDialogState extends State<CelebrationDialog>
     with TickerProviderStateMixin {
   late AnimationController _scaleController;
-  late AnimationController _rotationController;
+  late AnimationController _fadeController;
   late Animation<double> _scaleAnimation;
-  late Animation<double> _rotationAnimation;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
-    
+
     // 스케일 애니메이션 컨트롤러
     _scaleController = AnimationController(
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 400),
       vsync: this,
     );
-    
-    // 회전 애니메이션 컨트롤러
-    _rotationController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
+
+    // 페이드 애니메이션 컨트롤러
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     // 스케일 애니메이션
-    _scaleAnimation = Tween<double>(
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.easeOutBack),
+    );
+
+    // 페이드 애니메이션
+    _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _scaleController,
-      curve: Curves.elasticOut,
-    ));
-    
-    // 회전 애니메이션
-    _rotationAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _rotationController,
-      curve: Curves.easeInOut,
-    ));
-    
+    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
+
     // 애니메이션 시작
+    _fadeController.forward();
     _scaleController.forward();
-    _rotationController.repeat();
   }
 
   @override
   void dispose() {
     _scaleController.dispose();
-    _rotationController.dispose();
+    _fadeController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      elevation: 10,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
       child: AnimatedBuilder(
-        animation: _scaleAnimation,
+        animation: Listenable.merge([_scaleAnimation, _fadeAnimation]),
         builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.primary,
-                    AppColors.secondary,
+          return FadeTransition(
+            opacity: _fadeAnimation,
+            child: Transform.scale(
+              scale: _scaleAnimation.value,
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 320),
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 32,
+                      offset: const Offset(0, 16),
+                    ),
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
                   ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
                 ),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // 축하 아이콘
-                  AnimatedBuilder(
-                    animation: _rotationAnimation,
-                    builder: (context, child) {
-                      return Transform.rotate(
-                        angle: _rotationAnimation.value * 2 * 3.14159,
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 10,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.celebration,
-                            size: 40,
-                            color: Color(0xFFFFD700), // 골드 색상
-                          ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // 성공 체크 아이콘
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.primary,
+                            AppColors.primary.withOpacity(0.8),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                      );
-                    },
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // 축하 제목
-                  const Text(
-                    '🎉 목표 달성! 🎉',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // 축하 메시지
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      widget.message,
-                      style: const TextStyle(
-                        fontSize: 16,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withOpacity(0.3),
+                            blurRadius: 16,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.check_rounded,
+                        size: 40,
                         color: Colors.white,
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // 완료 메시지
+                    Text(
+                      '완료!',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    // 목표 제목
+                    Text(
+                      widget.message,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: AppColors.textSecondary,
                         fontWeight: FontWeight.w500,
                         height: 1.4,
                       ),
                       textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // 확인 버튼
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: AppColors.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
+
+                    const SizedBox(height: 32),
+
+                    // 계속하기 버튼
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                          shadowColor: Colors.transparent,
                         ),
-                        elevation: 5,
-                      ),
-                      child: const Text(
-                        '계속하기',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                        child: const Text(
+                          '닫기',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: -0.3,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );
@@ -191,4 +184,4 @@ class _CelebrationDialogState extends State<CelebrationDialog>
       ),
     );
   }
-} 
+}

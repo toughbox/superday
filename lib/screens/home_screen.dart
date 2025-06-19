@@ -489,7 +489,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           context: context,
           builder:
               (context) =>
-                  CelebrationDialog(message: "🎉 모든 목표를 달성하셨습니다! 훌륭해요!"),
+                  CelebrationDialog(message: "🎉 모든 목표를 달성하셨습니다!\n훌륭해요!"),
         );
       }
     }

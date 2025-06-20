@@ -70,12 +70,9 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppColors.primary, AppColors.primaryMint],
-          ),
+        decoration: const BoxDecoration(
+          // 새로운 스플래시 이미지와 매칭되는 파란색 배경
+          color: Color(0xFF4A90E2),
         ),
         child: Center(
           child: Column(
@@ -87,10 +84,22 @@ class _SplashScreenState extends State<SplashScreen>
                 builder: (context, child) {
                   return Transform.scale(
                     scale: _scaleAnimation.value,
-                    child: AppIcon(
-                      size: 150,
-                      backgroundColor: Colors.white,
-                      foregroundColor: AppColors.primary,
+                    child: Container(
+                      width: 150,
+                      height: 150,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                          width: 2,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.trending_up,
+                        size: 80,
+                        color: Colors.white,
+                      ),
                     ),
                   );
                 },

@@ -106,58 +106,60 @@ class _GoalItemState extends State<GoalItem> with TickerProviderStateMixin {
             onTapUp: (_) => _scaleController.reverse(),
             onTapCancel: () => _scaleController.reverse(),
             borderRadius: BorderRadius.circular(16),
-            child: Padding(
+                          child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Row(
+              child: Column(
                 children: [
-                  // 완료 체크박스
-                  GestureDetector(
-                    onTap: widget.onComplete,
-                    child: AnimatedBuilder(
-                      animation: _checkAnimation,
-                      builder: (context, child) {
-                        return Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color:
-                                widget.goal.isCompleted
-                                    ? AppColors.success
-                                    : AppColors.surface,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color:
+                  // 첫 번째 줄: 체크박스 - 목표 - 트로피 - 삭제버튼
+                  Row(
+                    children: [
+                      // 완료 체크박스
+                      GestureDetector(
+                        onTap: widget.onComplete,
+                        child: AnimatedBuilder(
+                          animation: _checkAnimation,
+                          builder: (context, child) {
+                            return Container(
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                color:
+                                    widget.goal.isCompleted
+                                        ? AppColors.success
+                                        : AppColors.surface,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color:
+                                      widget.goal.isCompleted
+                                          ? AppColors.success
+                                          : AppColors.border,
+                                  width: 2,
+                                ),
+                              ),
+                              child:
                                   widget.goal.isCompleted
-                                      ? AppColors.success
-                                      : AppColors.border,
-                              width: 2,
-                            ),
-                          ),
-                          child:
-                              widget.goal.isCompleted
-                                  ? Transform.scale(
-                                    scale: _checkAnimation.value,
-                                    child: const Icon(
-                                      Icons.check,
-                                      size: 16,
-                                      color: AppColors.textOnPrimary,
-                                    ),
-                                  )
-                                  : null,
-                        );
-                      },
-                    ),
-                  ),
+                                      ? Transform.scale(
+                                        scale: _checkAnimation.value,
+                                        child: const Icon(
+                                          Icons.check,
+                                          size: 16,
+                                          color: AppColors.textOnPrimary,
+                                        ),
+                                      )
+                                      : null,
+                            );
+                          },
+                        ),
+                      ),
 
-                  const SizedBox(width: 16),
+                      const SizedBox(width: 16),
 
-                  // 목표 내용
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
+                      // 목표 제목
+                      Expanded(
+                        child: Text(
                           widget.goal.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -172,148 +174,133 @@ class _GoalItemState extends State<GoalItem> with TickerProviderStateMixin {
                             decorationColor: AppColors.textSecondary,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.schedule_rounded,
-                              size: 14,
-                              color: AppColors.textTertiary,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              widget.goal.formattedDate,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textTertiary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            if (widget.goal.isCompleted &&
-                                widget.goal.completedDate != null) ...[
-                              const SizedBox(width: 12),
-                              Icon(
-                                Icons.check_circle_rounded,
-                                size: 14,
-                                color: AppColors.success,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                widget.goal.formattedCompletedDate,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.success,
-                                  fontWeight: FontWeight.w500,
+                      ),
+
+                      // 완료된 목표의 트로피
+                      if (widget.goal.isCompleted)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: ScaleTransition(
+                            scale: _checkAnimation,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: AppColors.successGradient,
                                 ),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.success.withOpacity(0.3),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // 액션 버튼들
-                  if (!widget.goal.isCompleted) ...[
-                    // 수정 버튼
-                    if (widget.onEdit != null)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceVariant,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: widget.onEdit,
-                              borderRadius: BorderRadius.circular(10),
                               child: const Icon(
-                                Icons.edit_rounded,
-                                size: 18,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-
-                  // 삭제 버튼
-                  if (widget.onDelete != null)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: AppColors.danger.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: widget.onDelete,
-                            borderRadius: BorderRadius.circular(10),
-                            child: const Icon(
-                              Icons.delete_outline_rounded,
-                              size: 18,
-                              color: AppColors.danger,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                  // 완료된 목표의 성취 뱃지
-                  if (widget.goal.isCompleted)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: ScaleTransition(
-                        scale: _checkAnimation,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: AppColors.successGradient,
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.success.withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
                                 Icons.emoji_events,
-                                size: 14,
+                                size: 18,
                                 color: AppColors.textOnPrimary,
                               ),
-                              const SizedBox(width: 4),
-                              const Text(
-                                '달성',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textOnPrimary,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
+                      
+                      // 수정 버튼 (완료되지 않은 목표만)
+                      if (!widget.goal.isCompleted && widget.onEdit != null)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceVariant,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: widget.onEdit,
+                                borderRadius: BorderRadius.circular(10),
+                                child: const Icon(
+                                  Icons.edit_rounded,
+                                  size: 18,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                      // 삭제 버튼
+                      if (widget.onDelete != null)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: AppColors.danger.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: widget.onDelete,
+                                borderRadius: BorderRadius.circular(10),
+                                child: const Icon(
+                                  Icons.delete_outline_rounded,
+                                  size: 18,
+                                  color: AppColors.danger,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // 두 번째 줄: 목표설정일과 달성일시 (좌측정렬)
+                  Row(
+                    children: [
+                      // 목표 설정 날짜
+                      Icon(
+                        Icons.schedule_rounded,
+                        size: 14,
+                        color: AppColors.textTertiary,
                       ),
-                    ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '목표 설정: ${widget.goal.formattedDate}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textTertiary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      
+                      // 달성일시 (완료된 목표만)
+                      if (widget.goal.isCompleted && widget.goal.completedDate != null) ...[
+                        const SizedBox(width: 16),
+                        Icon(
+                          Icons.check_circle_rounded,
+                          size: 14,
+                          color: AppColors.success,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '달성: ${widget.goal.formattedCompletedDate}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.success,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ],
               ),
             ),

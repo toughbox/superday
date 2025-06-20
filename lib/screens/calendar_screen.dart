@@ -374,8 +374,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               goal.isCompleted
                                   ? null
                                   : () => _completeGoal(goal.id),
-                          onEdit:
-                              goal.isCompleted ? null : () => _editGoal(goal),
+                          onEdit: null, // 달력 화면에서는 수정 버튼 제거
                           onDelete: () => _deleteGoal(goal.id),
                         ),
                       );

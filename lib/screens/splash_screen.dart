@@ -89,16 +89,35 @@ class _SplashScreenState extends State<SplashScreen>
                       height: 150,
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(75),
                         border: Border.all(
                           color: Colors.white.withOpacity(0.3),
-                          width: 2,
+                          width: 3,
                         ),
                       ),
-                      child: Icon(
-                        Icons.trending_up,
-                        size: 80,
-                        color: Colors.white,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // 원형 진행률 바
+                          SizedBox(
+                            width: 110,
+                            height: 110,
+                            child: CircularProgressIndicator(
+                              value: 0.75, // 75% 진행률 표시
+                              strokeWidth: 8,
+                              backgroundColor: Colors.white.withOpacity(0.3),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                            ),
+                          ),
+                          // 중앙 아이콘
+                          Icon(
+                            Icons.emoji_events,
+                            size: 50,
+                            color: Colors.white,
+                          ),
+                        ],
                       ),
                     ),
                   );

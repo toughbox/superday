@@ -32,20 +32,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildSectionTitle('데이터 관리'),
             _buildSettingsCard([
               _buildActionTile(
-                '데이터 백업',
-                '목표 데이터를 백업합니다',
-                Icons.backup_rounded,
-                () => _showBackupDialog(),
-              ),
-              const Divider(height: 1),
-              _buildActionTile(
-                '데이터 복원',
-                '백업된 데이터를 복원합니다',
-                Icons.restore_rounded,
-                () => _showRestoreDialog(),
-              ),
-              const Divider(height: 1),
-              _buildActionTile(
                 '모든 데이터 삭제',
                 '모든 목표와 기록을 삭제합니다',
                 Icons.delete_forever_rounded,
@@ -60,13 +46,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildSectionTitle('정보'),
             _buildSettingsCard([
               _buildInfoTile('앱 버전', '1.0.0', Icons.info_rounded),
-              const Divider(height: 1),
-              _buildActionTile(
-                '개발자 정보',
-                '앱 개발자에 대한 정보',
-                Icons.code_rounded,
-                () => _showDeveloperInfo(),
-              ),
               const Divider(height: 1),
               _buildActionTile(
                 '오픈소스 라이센스',
@@ -180,67 +159,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showBackupDialog() {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: const Text(
-              '데이터 백업',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            content: const Text('목표 데이터를 백업하시겠습니까?\n백업된 데이터는 기기에 저장됩니다.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('취소'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  Navigator.pop(context);
-                  // 백업 로직 구현
-                  _showSnackBar('데이터 백업이 완료되었습니다', isSuccess: true);
-                },
-                child: const Text('백업'),
-              ),
-            ],
-          ),
-    );
-  }
 
-  void _showRestoreDialog() {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: const Text(
-              '데이터 복원',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            content: const Text('백업된 데이터를 복원하시겠습니까?\n현재 데이터는 덮어씌워집니다.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('취소'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  Navigator.pop(context);
-                  // 복원 로직 구현
-                  _showSnackBar('데이터 복원이 완료되었습니다', isSuccess: true);
-                },
-                child: const Text('복원'),
-              ),
-            ],
-          ),
-    );
-  }
 
   void _showDeleteAllDialog() {
     showDialog(
@@ -285,38 +204,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showDeveloperInfo() {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: const Text(
-              '개발자 정보',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            content: const Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('하루성공 - 목표 달성 앱'),
-                SizedBox(height: 8),
-                Text('매일 작은 목표를 설정하고 달성하여\n성취감을 느낄 수 있는 앱입니다.'),
-                SizedBox(height: 16),
-                Text('Made with ❤️ using Flutter'),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('확인'),
-              ),
-            ],
-          ),
-    );
-  }
+
 
   void _showLicenses() {
     showLicensePage(

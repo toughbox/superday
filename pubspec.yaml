@@ -55,9 +55,6 @@ dependencies:
   # 유틸리티
   intl: ^0.19.0
   
-  # 파일 시스템
-  file_picker: ^8.1.2
-  
   # 패키지 정보
   package_info_plus: ^8.0.2
   

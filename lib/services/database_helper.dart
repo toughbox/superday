@@ -26,7 +26,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDatabase,
       onUpgrade: _upgradeDatabase,
     );
@@ -72,10 +72,14 @@ class DatabaseHelper {
 
   /// 데이터베이스 업그레이드
   Future<void> _upgradeDatabase(Database db, int oldVersion, int newVersion) async {
-    // 향후 데이터베이스 스키마 변경 시 사용
+    // 날짜 필터링 문제 해결을 위해 기존 테이블 삭제하고 재생성
     if (oldVersion < 2) {
-      // 예: 새로운 컬럼 추가
-      // await db.execute('ALTER TABLE goals ADD COLUMN priority INTEGER DEFAULT 0');
+      // 기존 테이블 삭제
+      await db.execute('DROP TABLE IF EXISTS achievements');
+      await db.execute('DROP TABLE IF EXISTS goals');
+      
+      // 새로운 테이블 생성
+      await _createDatabase(db, newVersion);
     }
   }
 
@@ -126,12 +130,15 @@ class DatabaseHelper {
   /// 특정 날짜의 목표 조회
   Future<List<Goal>> getGoalsByDate(DateTime date) async {
     final db = await database;
-    final dateString = date.toIso8601String().substring(0, 10);
+    
+    // 해당 날짜의 시작과 끝 시간 계산
+    final startOfDay = DateTime(date.year, date.month, date.day);
+    final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59, 999);
     
     final List<Map<String, dynamic>> maps = await db.query(
       'goals',
-      where: 'DATE(created_date) = ?',
-      whereArgs: [dateString],
+      where: 'created_date >= ? AND created_date <= ?',
+      whereArgs: [startOfDay.toIso8601String(), endOfDay.toIso8601String()],
       orderBy: 'created_date DESC',
     );
 
@@ -143,13 +150,15 @@ class DatabaseHelper {
   /// 날짜 범위로 목표 조회
   Future<List<Goal>> getGoalsByDateRange(DateTime startDate, DateTime endDate) async {
     final db = await database;
-    final startString = startDate.toIso8601String().substring(0, 10);
-    final endString = endDate.toIso8601String().substring(0, 10);
+    
+    // 시작 날짜의 00:00:00 부터 종료 날짜의 23:59:59 까지
+    final startOfDay = DateTime(startDate.year, startDate.month, startDate.day);
+    final endOfDay = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59, 999);
     
     final List<Map<String, dynamic>> maps = await db.query(
       'goals',
-      where: 'DATE(created_date) BETWEEN ? AND ?',
-      whereArgs: [startString, endString],
+      where: 'created_date >= ? AND created_date <= ?',
+      whereArgs: [startOfDay.toIso8601String(), endOfDay.toIso8601String()],
       orderBy: 'created_date DESC',
     );
 

@@ -102,9 +102,9 @@ class _GoalItemState extends State<GoalItem> with TickerProviderStateMixin {
           color: Colors.transparent,
           child: InkWell(
             onTap: widget.onTap,
-            onTapDown: (_) => _scaleController.forward(),
-            onTapUp: (_) => _scaleController.reverse(),
-            onTapCancel: () => _scaleController.reverse(),
+            onTapDown: widget.onTap != null ? (_) => _scaleController.forward() : null,
+            onTapUp: widget.onTap != null ? (_) => _scaleController.reverse() : null,
+            onTapCancel: widget.onTap != null ? () => _scaleController.reverse() : null,
             borderRadius: BorderRadius.circular(16),
                           child: Padding(
               padding: const EdgeInsets.all(16),

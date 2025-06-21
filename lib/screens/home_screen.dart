@@ -438,7 +438,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         padding: const EdgeInsets.only(bottom: 12),
                         child: GoalItem(
                           goal: goal,
-                          onTap: () => _toggleGoal(goal),
+                          onTap: null, // 카드 클릭으로는 완료처리 안 함
                           onComplete:
                               goal.isCompleted
                                   ? null

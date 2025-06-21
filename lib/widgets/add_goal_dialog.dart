@@ -136,19 +136,23 @@ class _AddGoalDialogState extends State<AddGoalDialog> {
       _isLoading = true;
     });
 
-    try {
-      final goalProvider = context.read<GoalProviderInterface>();
-      bool success;
+    final goalProvider = context.read<GoalProviderInterface>();
+    bool success;
 
-      if (widget.goal != null) {
-        // 수정 모드
-        success = await goalProvider.updateGoal(widget.goal!.id, title);
-      } else {
-        // 추가 모드
-        success = await goalProvider.addGoal(title);
-      }
+    if (widget.goal != null) {
+      // 수정 모드
+      success = await goalProvider.updateGoal(widget.goal!.id, title);
+    } else {
+      // 추가 모드
+      success = await goalProvider.addGoal(title);
+    }
 
-      if (success && mounted) {
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (success) {
         Navigator.pop(context);
         _showSnackBar(
           widget.goal != null 
@@ -156,16 +160,16 @@ class _AddGoalDialogState extends State<AddGoalDialog> {
               : '목표가 추가되었습니다',
           isSuccess: true,
         );
-      }
-    } catch (e) {
-      if (mounted) {
-        _showSnackBar('오류가 발생했습니다: ${e.toString()}');
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+      } else {
+        // 실패한 경우 Provider의 에러 메시지 확인
+        final errorMessage = goalProvider.errorMessage ?? '알 수 없는 오류가 발생했습니다';
+        
+        // 중복 목표 에러인 경우 명확한 팝업 표시
+        if (errorMessage.contains(AppStrings.goalAlreadyExists)) {
+          _showDuplicateGoalDialog();
+        } else {
+          _showSnackBar(errorMessage);
+        }
       }
     }
   }
@@ -181,6 +185,53 @@ class _AddGoalDialogState extends State<AddGoalDialog> {
         ),
         duration: const Duration(seconds: 2),
       ),
+    );
+  }
+
+  void _showDuplicateGoalDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          icon: const Icon(
+            Icons.warning_amber_rounded,
+            color: Colors.orange,
+            size: 48,
+          ),
+          title: const Text(
+            '목표 중복',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          content: const Text(
+            '같은 목표는 등록할 수 없습니다.\n다른 목표를 입력해주세요.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 16),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                // 텍스트 필드에 포커스를 다시 맞춤
+                _focusNode.requestFocus();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text('확인'),
+            ),
+          ],
+        );
+      },
     );
   }
 } 

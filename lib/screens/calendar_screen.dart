@@ -394,6 +394,69 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final goalProvider = context.read<GoalProviderInterface>();
     await goalProvider.completeGoal(goalId);
     await _loadMonthlyGoals();
+
+    // 목표가 오늘 것이라면 오늘의 모든 목표 완료 시 축하 메시지 표시
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    
+    if (_selectedDay != null) {
+      final selectedDate = DateTime(
+        _selectedDay!.year,
+        _selectedDay!.month,
+        _selectedDay!.day,
+      );
+      
+      if (selectedDate == today) {
+        final todayGoals = _getGoalsForDay(_selectedDay!);
+        final allCompleted = todayGoals.every((g) => g.isCompleted);
+
+        if (allCompleted && todayGoals.isNotEmpty && mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    '🎉',
+                    style: TextStyle(fontSize: 60),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    '오늘의 모든 목표를 달성하셨습니다!\n훌륭해요!',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      '확인',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+      }
+    }
   }
 
   /// 목표 수정

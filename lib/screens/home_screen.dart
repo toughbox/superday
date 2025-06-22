@@ -206,7 +206,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Consumer<GoalProviderInterface>(
       builder: (context, goalProvider, child) {
-        final goals = goalProvider.goals;
+        final goals = goalProvider.todayGoals;
         final completedGoals = goals.where((goal) => goal.isCompleted).toList();
         final pendingGoals = goals.where((goal) => !goal.isCompleted).toList();
         final completionRate =
@@ -480,16 +480,53 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     } else {
       await goalProvider.completeGoal(goal.id);
 
-      // 모든 목표 완료 시 축하 메시지
-      final allGoals = goalProvider.goals;
-      final allCompleted = allGoals.every((g) => g.isCompleted);
+      // 오늘의 모든 목표 완료 시 축하 메시지
+      final todayGoals = goalProvider.todayGoals;
+      final allCompleted = todayGoals.every((g) => g.isCompleted);
 
-      if (allCompleted && allGoals.isNotEmpty && mounted) {
+      if (allCompleted && todayGoals.isNotEmpty && mounted) {
         showDialog(
           context: context,
-          builder:
-              (context) =>
-                  CelebrationDialog(message: "🎉 모든 목표를 달성하셨습니다!\n훌륭해요!"),
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  '🎉',
+                  style: TextStyle(fontSize: 60),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  '오늘의 모든 목표를 달성하셨습니다!\n훌륭해요!',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    '확인',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       }
     }

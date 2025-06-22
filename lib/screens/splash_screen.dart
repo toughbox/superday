@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import '../constants/colors.dart';
 import '../widgets/app_icon.dart';
 import 'home_screen.dart';
@@ -43,6 +44,9 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _startAnimation() async {
+    // 네이티브 스플래시 제거
+    FlutterNativeSplash.remove();
+    
     await _animationController.forward();
     await Future.delayed(const Duration(milliseconds: 1000));
 

@@ -113,44 +113,45 @@ class _GoalItemState extends State<GoalItem> with TickerProviderStateMixin {
                   // 첫 번째 줄: 체크박스 - 목표 - 트로피 - 삭제버튼
                   Row(
                     children: [
-                      // 완료 체크박스
-                      GestureDetector(
-                        onTap: widget.onComplete,
-                        child: AnimatedBuilder(
-                          animation: _checkAnimation,
-                          builder: (context, child) {
-                            return Container(
-                              width: 24,
-                              height: 24,
-                              decoration: BoxDecoration(
-                                color:
-                                    widget.goal.isCompleted
-                                        ? AppColors.success
-                                        : AppColors.surface,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
+                      // 완료 체크박스 (오늘 목표이거나 이미 완료된 목표에만 표시)
+                      if (widget.goal.isToday || widget.goal.isCompleted)
+                        GestureDetector(
+                          onTap: widget.onComplete,
+                          child: AnimatedBuilder(
+                            animation: _checkAnimation,
+                            builder: (context, child) {
+                              return Container(
+                                width: 24,
+                                height: 24,
+                                decoration: BoxDecoration(
                                   color:
                                       widget.goal.isCompleted
                                           ? AppColors.success
-                                          : AppColors.border,
-                                  width: 2,
+                                          : AppColors.surface,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color:
+                                        widget.goal.isCompleted
+                                            ? AppColors.success
+                                            : AppColors.border,
+                                    width: 2,
+                                  ),
                                 ),
-                              ),
-                              child:
-                                  widget.goal.isCompleted
-                                      ? Transform.scale(
-                                        scale: _checkAnimation.value,
-                                        child: const Icon(
-                                          Icons.check,
-                                          size: 16,
-                                          color: AppColors.textOnPrimary,
-                                        ),
-                                      )
-                                      : null,
-                            );
-                          },
+                                child:
+                                    widget.goal.isCompleted
+                                        ? Transform.scale(
+                                          scale: _checkAnimation.value,
+                                          child: const Icon(
+                                            Icons.check,
+                                            size: 16,
+                                            color: AppColors.textOnPrimary,
+                                          ),
+                                        )
+                                        : null,
+                              );
+                            },
+                          ),
                         ),
-                      ),
 
                       const SizedBox(width: 16),
 

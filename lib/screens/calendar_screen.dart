@@ -5,6 +5,7 @@ import '../services/goal_provider_interface.dart';
 import '../models/goal.dart';
 import '../constants/colors.dart';
 import '../widgets/goal_item.dart';
+import '../widgets/goal_detail_dialog.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -369,7 +370,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         margin: const EdgeInsets.only(bottom: 8),
                         child: GoalItem(
                           goal: goal,
-                          onTap: () {},
+                          onTap: () => _showGoalDetail(goal),
                           onComplete:
                               goal.isCompleted
                                   ? null
@@ -465,6 +466,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('목표 수정 기능은 홈 화면에서 이용하세요')));
+  }
+
+  void _showGoalDetail(Goal goal) {
+    showDialog(
+      context: context,
+      builder: (context) => GoalDetailDialog(
+        goal: goal,
+        onComplete: goal.isCompleted ? null : () => _completeGoal(goal.id),
+      ),
+    );
   }
 
   /// 목표 삭제

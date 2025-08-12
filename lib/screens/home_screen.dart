@@ -7,6 +7,7 @@ import '../constants/strings.dart';
 import '../widgets/add_goal_dialog.dart';
 import '../widgets/goal_item.dart';
 import '../widgets/celebration_dialog.dart';
+import '../widgets/goal_detail_dialog.dart';
 import 'calendar_screen.dart';
 import 'history_screen.dart';
 import 'settings_screen.dart';
@@ -438,7 +439,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         padding: const EdgeInsets.only(bottom: 12),
                         child: GoalItem(
                           goal: goal,
-                          onTap: null, // 카드 클릭으로는 완료처리 안 함
+                          onTap: () => _showGoalDetail(goal), // 목표 세부 정보 팝업 표시
                           onComplete:
                               goal.isCompleted
                                   ? null
@@ -530,6 +531,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         );
       }
     }
+  }
+
+  void _showGoalDetail(Goal goal) {
+    showDialog(
+      context: context,
+      builder: (context) => GoalDetailDialog(
+        goal: goal,
+        onComplete: goal.isCompleted 
+            ? null 
+            : () => _completeGoal(goal),
+      ),
+    );
   }
 
   void _completeGoal(Goal goal) async {

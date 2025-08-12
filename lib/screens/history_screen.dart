@@ -6,6 +6,7 @@ import '../models/achievement.dart';
 import '../constants/colors.dart';
 import '../constants/strings.dart';
 import '../widgets/goal_item.dart';
+import '../widgets/goal_detail_dialog.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -346,7 +347,7 @@ class _HistoryScreenState extends State<HistoryScreen>
           margin: const EdgeInsets.only(bottom: 8),
           child: GoalItem(
             goal: goal,
-            onTap: () {},
+            onTap: () => _showGoalDetail(goal),
             onComplete: goal.isCompleted ? null : () => _completeGoal(goal.id), // 완료되지 않은 목표만 완료 가능
             onEdit: null, // 기록 화면에서는 수정 기능 비활성화
             onDelete: () => _deleteGoal(goal.id),
@@ -421,6 +422,16 @@ class _HistoryScreenState extends State<HistoryScreen>
         );
       }
     }
+  }
+
+  void _showGoalDetail(Goal goal) {
+    showDialog(
+      context: context,
+      builder: (context) => GoalDetailDialog(
+        goal: goal,
+        onComplete: goal.isCompleted ? null : () => _completeGoal(goal.id),
+      ),
+    );
   }
 
   void _deleteGoal(String goalId) {

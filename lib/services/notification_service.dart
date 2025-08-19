@@ -50,8 +50,7 @@ class NotificationService {
       final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
           _notifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
       
-      await androidImplementation?.requestNotificationsPermission();
-      await androidImplementation?.requestExactAlarmsPermission();
+             await androidImplementation?.requestNotificationsPermission();
     } else if (Platform.isIOS) {
       final IOSFlutterLocalNotificationsPlugin? iosImplementation =
           _notifications.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
@@ -104,16 +103,17 @@ class NotificationService {
       iOS: iosDetails,
     );
     
-    await _notifications.zonedSchedule(
-      1, // 알림 ID
-      '목표 확인 시간이에요! 📝',
-      '오늘의 목표를 모두 달성하셨나요?',
-      tz.TZDateTime.from(scheduledDate, tz.local),
-      details,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time, // 매일 같은 시간에 반복
-      payload: 'goal_reminder',
-    );
+         await _notifications.zonedSchedule(
+       1, // 알림 ID
+       '목표 확인 시간이에요! 📝',
+       '오늘의 목표를 모두 달성하셨나요?',
+       tz.TZDateTime.from(scheduledDate, tz.local),
+       details,
+       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+       uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+       matchDateTimeComponents: DateTimeComponents.time, // 매일 같은 시간에 반복
+       payload: 'goal_reminder',
+     );
     
     print('매일 20시 목표 리마인더 알림이 설정되었습니다.');
   }

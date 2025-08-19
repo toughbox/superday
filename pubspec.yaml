@@ -1,7 +1,7 @@
 name: superday
 description: "하루성공 - 매일 하나의 목표를 달성하는 동기부여 앱"
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.1.0+4
+version: 1.1.0+6
 
 environment:
   sdk: ^3.7.0

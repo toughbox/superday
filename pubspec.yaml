@@ -1,7 +1,7 @@
 name: superday
 description: "하루성공 - 매일 하나의 목표를 달성하는 동기부여 앱"
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.0.0+2
+version: 1.1.0+4
 
 environment:
   sdk: ^3.7.0
@@ -37,6 +37,10 @@ dependencies:
   
   # URL 런처
   url_launcher: ^6.3.1
+
+  # 로컬 알림
+  flutter_local_notifications: ^17.2.2
+  timezone: ^0.9.4
 
   flutter_native_splash: ^2.4.0
 

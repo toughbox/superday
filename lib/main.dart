@@ -9,6 +9,7 @@ import 'constants/strings.dart';
 import 'services/goal_provider.dart';
 import 'services/web_goal_provider.dart';
 import 'services/goal_provider_interface.dart';
+import 'services/notification_service.dart';
 import 'screens/home_screen.dart';
 import 'screens/splash_screen.dart';
 
@@ -18,6 +19,15 @@ void main() async {
 
   //화면 세로고정
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
+  // 웹이 아닌 경우에만 알림 서비스 초기화
+  if (!kIsWeb) {
+    try {
+      await NotificationService().initialize();
+    } catch (e) {
+      print('알림 서비스 초기화 실패: $e');
+    }
+  }
 
   runApp(const SuperDayApp());
 }

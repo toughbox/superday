@@ -47,5 +47,16 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		
+		<!-- 백그라운드 모드 (알림 처리) -->
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>background-processing</string>
+			<string>background-fetch</string>
+		</array>
+		
+		<!-- 로컬 알림 권한 설명 -->
+		<key>NSUserNotificationsUsageDescription</key>
+		<string>매일 목표 달성을 확인하고 동기부여 메시지를 보내기 위해 알림 권한이 필요합니다.</string>
 	</dict>
 </plist>

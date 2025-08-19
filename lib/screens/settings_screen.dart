@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import '../services/goal_provider_interface.dart';
+import '../services/notification_service.dart';
 import '../constants/colors.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -22,12 +24,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         backgroundColor: AppColors.primary,
         elevation: 0,
+
+
+        
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+
+
             // 데이터 관리 섹션
             _buildSectionTitle('데이터 관리'),
             _buildSettingsCard([
@@ -45,7 +52,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // 정보 섹션
             _buildSectionTitle('정보'),
             _buildSettingsCard([
-              _buildInfoTile('앱 버전', '1.0.0', Icons.info_rounded),
+              _buildInfoTile('앱 버전', '1.1.0', Icons.info_rounded),
               const Divider(height: 1),
               _buildActionTile(
                 '오픈소스 라이센스',
@@ -210,9 +217,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showLicensePage(
       context: context,
       applicationName: '하루성공',
-      applicationVersion: '1.0.0',
+      applicationVersion: '1.1.0',
     );
   }
+
+
 
   void _showSnackBar(String message, {bool isSuccess = false}) {
     ScaffoldMessenger.of(context).showSnackBar(

@@ -184,14 +184,6 @@ class GoalDetailDialog extends StatelessWidget {
 
                 // 소요 시간 섹션 제거
 
-                // 목표 타입
-                _buildDetailRow(
-                  icon: Icons.today_rounded,
-                  iconColor: goal.isToday ? AppColors.success : AppColors.textTertiary,
-                  label: '목표 유형',
-                  value: goal.isToday ? '오늘의 목표' : '이전 목표',
-                ),
-
                 const SizedBox(height: 24),
 
                 // 하단 액션: 완료되지 않은 '오늘 목표'만 완료 버튼 노출

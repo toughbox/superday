@@ -66,6 +66,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final completedGoals = goals.where((g) => g.isCompleted).length;
     final totalGoals = goals.length;
     final isAllCompleted = totalGoals > 0 && completedGoals == totalGoals;
+    final hasUncompletedGoals = totalGoals > 0 && completedGoals < totalGoals;
+    final isPastDay = day.isBefore(DateTime.now().subtract(const Duration(days: 1)));
 
     Color? backgroundColor;
     Color? textColor;
@@ -99,7 +101,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
               size: cellSize * 0.7, // 셀 크기의 70%
               color: Colors.amber.withOpacity(0.6), // 더 진하게 처리
             ),
-          // 날짜 숫자 (맨 앞에 와서 별 위에 표시)
+          // 과거 날짜에서 목표가 있지만 완료하지 못한 경우에만 실패 아이콘 표시
+          if (hasUncompletedGoals && isPastDay)
+            Icon(
+              Icons.cancel,
+              size: cellSize * 0.8, // 셀 크기의 80%로 증가
+              color: Colors.red.withOpacity(0.8), // 더 진한 빨간색으로 표시
+            ),
+          // 날짜 숫자 (맨 앞에 와서 아이콘 위에 표시)
           Text(
             '${day.day}',
             style: TextStyle(

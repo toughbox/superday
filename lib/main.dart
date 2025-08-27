@@ -23,7 +23,11 @@ void main() async {
   // 웹이 아닌 경우에만 알림 서비스 초기화
   if (!kIsWeb) {
     try {
-      await NotificationService().initialize();
+      final notificationService = NotificationService();
+      await notificationService.initialize();
+      
+      // 백업 알림도 설정
+      await notificationService.scheduleBackupNotification();
     } catch (e) {
       print('알림 서비스 초기화 실패: $e');
     }

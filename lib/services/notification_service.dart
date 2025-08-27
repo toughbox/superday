@@ -90,6 +90,9 @@ class NotificationService {
       importance: Importance.high,
       priority: Priority.high,
       showWhen: true,
+      // 더 눈에 띄는 알림 설정
+      enableVibration: true,
+      playSound: true,
     );
     
     const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
@@ -223,7 +226,59 @@ class NotificationService {
     }
   }
   
+  /// 백그라운드에서도 더 안정적인 알림을 위한 추가 메서드
+  Future<void> scheduleBackupNotification() async {
+    // 20시 30분에 백업 알림 (20시 알림이 누락된 경우)
+    final now = DateTime.now();
+    var backupDate = DateTime(now.year, now.month, now.day, 20, 30);
+    
+    if (backupDate.isBefore(now)) {
+      backupDate = backupDate.add(const Duration(days: 1));
+    }
+    
+    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'goal_reminder_backup',
+      '목표 리마인더 (백업)',
+      channelDescription: '20시 알림이 누락된 경우를 위한 백업 알림',
+      importance: Importance.defaultImportance,
+      priority: Priority.defaultPriority,
+      showWhen: true,
+    );
+    
+    const NotificationDetails details = NotificationDetails(
+      android: androidDetails,
+      iOS: DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
+    );
+    
+    await _notifications.zonedSchedule(
+      5, // 백업 알림 ID
+      '오늘 목표는 어떠셨나요? 📝',
+      '아직 목표를 확인하지 않으셨다면 지금 확인해보세요!',
+      tz.TZDateTime.from(backupDate, tz.local),
+      details,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.time,
+      payload: 'goal_reminder_backup',
+    );
+  }
 
+  /// 앱이 포그라운드로 돌아올 때 알림 상태 확인
+  Future<void> checkNotificationStatus() async {
+    final now = DateTime.now();
+    final hour = now.hour;
+    
+    // 20시~21시 사이에 앱을 열었다면 알림 확인
+    if (hour >= 20 && hour < 21) {
+      // 오늘 알림을 받았는지 확인하는 로직
+      // (SharedPreferences에 저장된 상태 확인)
+      print('저녁 시간대 - 알림 상태 확인 필요');
+    }
+  }
   
   /// 모든 알림 취소
   Future<void> cancelAllNotifications() async {
